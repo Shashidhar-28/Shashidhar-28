@@ -1,0 +1,36 @@
+:root{--gap:2.4vmin;--size:min(92vw,520px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#faf8ef;color:#776e65;font-family:system-ui,Arial,sans-serif;overscroll-behavior:none;touch-action:none;user-select:none}
+main{width:var(--size);margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 0 12px}
+header{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:clamp(44px,13vw,72px);margin:0;color:#776e65}
+.scores{display:flex;gap:8px}
+.box{background:#bbada0;color:#fff;border-radius:6px;padding:6px 14px;text-align:center;min-width:70px}
+.box span{display:block;font-size:11px;color:#eee4da}
+.box b{font-size:20px}
+.bar{display:flex;justify-content:space-between;align-items:center;margin:10px 0;gap:8px}
+.bar p{margin:0;font-size:15px}
+button{background:#8f7a66;color:#f9f6f2;border:0;border-radius:6px;padding:10px 16px;font-size:15px;font-weight:bold;cursor:pointer}
+button:active{background:#7a6857}
+#board{position:relative;width:var(--size);height:var(--size);background:#bbada0;border-radius:8px}
+.cell,.tile{position:absolute;width:calc((100% - 5*var(--gap))/4);height:calc((100% - 5*var(--gap))/4);border-radius:5px}
+.cell{background:rgba(238,228,218,.35)}
+.tile{display:flex;align-items:center;justify-content:center;font-weight:bold;transition:left .1s,top .1s;font-size:calc(var(--size)/9)}
+.tile.new{animation:pop .15s}
+.tile.merge{animation:bump .15s}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes bump{50%{transform:scale(1.15)}}
+.t2{background:#eee4da}.t4{background:#ede0c8}
+.t8{background:#f2b179;color:#f9f6f2}.t16{background:#f59563;color:#f9f6f2}
+.t32{background:#f67c5f;color:#f9f6f2}.t64{background:#f65e3b;color:#f9f6f2}
+.t128{background:#edcf72;color:#f9f6f2;font-size:calc(var(--size)/11)}
+.t256{background:#edcc61;color:#f9f6f2;font-size:calc(var(--size)/11)}
+.t512{background:#edc850;color:#f9f6f2;font-size:calc(var(--size)/11)}
+.t1024{background:#edc53f;color:#f9f6f2;font-size:calc(var(--size)/14)}
+.t2048{background:#edc22e;color:#f9f6f2;font-size:calc(var(--size)/14)}
+.tbig{background:#3c3a32;color:#f9f6f2;font-size:calc(var(--size)/14)}
+#overlay{position:fixed;inset:0;background:rgba(250,248,239,.85);display:flex;align-items:center;justify-content:center;text-align:center}
+#overlay[hidden]{display:none}
+#overlay h2{font-size:40px;margin:0 0 16px}
+#overlay button{margin:4px}
+.hint{text-align:center;font-size:13px;opacity:.7}
