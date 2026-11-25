@@ -83,7 +83,7 @@
       const imgs = window.renderSet3D(setKey);
       if (imgs) {
         const L = imgs.map(u => `<img src="${u}" alt="">`);
-        if (setKey === 'specs' && window.EYE_PHOTOS) window.EYE_PHOTOS.forEach((u, i) => { if (5 + i < L.length) L[5 + i] = `<img class="photo" src="${u}" alt="">`; });
+        if (setKey === 'specs' && window.EYE_PHOTOS) window.EYE_PHOTOS.forEach((u, i) => { if (2 + i < L.length) L[2 + i] = `<img class="photo" src="${u}" alt="">`; });
         TILESETS[setKey].labels = L;
       }
     } catch (e) {}
@@ -158,7 +158,7 @@
     return String(v);
   }
 
-  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Dragon', veg: 'Pumpkin', tiffin: 'Curry rice', stones: 'Diamond ring', specs: 'Gold frame', space: 'Trophy' };
+  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Dragon', veg: 'Pumpkin', tiffin: 'Curry rice', stones: 'Diamond ring', specs: 'Gold aviator', space: 'Trophy' };
   function renderGoal() {
     const t = THEMES[themeKey], el = $('goal'), isEmoji = !!TILESETS[setKey].labels;
     el.className = 'tile' + (isEmoji ? ' emoji' : '');
