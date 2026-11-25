@@ -548,18 +548,25 @@
     return pose(g, 0.2, -0.5, 0);
   };
   const caseItem = () => {
-    const g = new THREE.Group(), tt = tex(256, 256, (c, w, h) => { c.fillStyle = '#6a3a1a'; c.fillRect(0, 0, w, h); for (let i = 0; i < 1500; i++) { c.fillStyle = `rgba(${20 + rnd() * 40 | 0},${10 + rnd() * 20 | 0},0,.25)`; c.fillRect(rnd() * w, rnd() * h, 2, 2); } });
-    const leather = mat(0xffffff, { map: tt, roughness: 0.55, clearcoat: 0.3, bumpMap: tt, bumpScale: 1 });
-    const body = new THREE.Mesh(new THREE.ExtrudeGeometry(rr(3.3, 1.3, 0.55), { depth: 0.9, bevelEnabled: true, bevelSize: 0.1, bevelThickness: 0.14, bevelSegments: 4, curveSegments: 16 }), leather); body.position.z = -0.45; g.add(body);
-    const gm = goldM(), z = 0.62;
-    [-0.5, 0.5].forEach(x => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.045, 10, 36), gm); r.position.set(x, 0.05, z); g.add(r); });
-    g.add(tube([[-0.18, 0.15, z], [0, 0.22, z], [0.18, 0.15, z]], 0.04, gm));
-    const cl = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.1), gm); cl.position.set(0, -0.5, z); g.add(cl);
-    const seam = new THREE.Mesh(new THREE.BoxGeometry(3.3, 0.03, 0.04), mat(0x2a1408)); seam.position.set(0, 0.0, 0.0); seam.position.z = 0.58; seam.position.y = 0.45; g.add(seam);
-    return pose(g, 0.55, -0.45, 0.05);
+    const g = new THREE.Group(), tt = tex(256, 256, (c, w, h) => { c.fillStyle = '#b8742a'; c.fillRect(0, 0, w, h); for (let i = 0; i < 2500; i++) { c.fillStyle = `rgba(${60 + rnd() * 40 | 0},${30 + rnd() * 20 | 0},0,.22)`; c.beginPath(); c.arc(rnd() * w, rnd() * h, 1.4, 0, 7); c.fill(); } });
+    const leather = mat(0xffffff, { map: tt, roughness: 0.5, clearcoat: 0.25, bumpMap: tt, bumpScale: 1.2 });
+    const body = new THREE.Mesh(new THREE.ExtrudeGeometry(rr(3.4, 1.5, 0.35), { depth: 0.6, bevelEnabled: true, bevelSize: 0.08, bevelThickness: 0.12, bevelSegments: 4, curveSegments: 16 }), leather); body.position.z = -0.3; g.add(body);
+    const fl = new THREE.Shape(); fl.moveTo(-1.7, 0.75); fl.lineTo(1.7, 0.75); fl.lineTo(1.7, -0.05); fl.lineTo(0.0, -0.75); fl.lineTo(-1.7, -0.05); fl.closePath();
+    const flap = new THREE.Mesh(new THREE.ExtrudeGeometry(fl, { depth: 0.04, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.04, bevelSegments: 2 }), leather); flap.position.z = 0.5; g.add(flap);
+    const gm = new THREE.MeshStandardMaterial({ color: 0xc89a60, metalness: 0.8, roughness: 0.3 });
+    const snap = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.19, 0.12, 24), gm); snap.rotation.x = Math.PI / 2; snap.position.set(0, -0.5, 0.7); g.add(snap);
+    const st = new THREE.LineCurve3 ? null : null;
+    for (let i = 0; i < 26; i++) { const t = i / 25, x = -1.55 + t * 3.1, y = x < 0 ? -0.05 - (x + 1.55) * (0.62 / 1.55) + 0.0 : -0.05 - (1.55 - x) * (0.62 / 1.55) + 0.0; const d = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.014, 0.014), mat(0x7a4a1a)); d.position.set(x, -0.62 + (x < 0 ? (x + 1.55) * 0.4 : (1.55 - x) * 0.4) - 0.0, 0.62); d.rotation.z = x < 0 ? 0.4 : -0.4; g.add(d); }
+    return pose(g, 0.6, -0.4, 0.05);
   };
   const FR = (root.SET3D || {}).specs;
-  if (FR && FR.length === 11) (root.SET3D = root.SET3D || {}).specs = [FR[0], FR[1], monocle, threeD, FR[3], goggles, FR[5], FR[2], ski, caseItem, FR[10]];
+  if (FR && FR.length === 11 && root.makeGlasses3D) {
+    const mk = f => () => root.makeGlasses3D(f);
+    const browline = mk(['brow', 'metal', 0xe8b858, 0xeaf0f4, 0.2, false, 0x0e0e10]);
+    const hexRose = mk(['hex', 'metal', 0xe9a98f, 0xf4e0e6, 0.2]);
+    const butterfly = mk(['butterfly', 'metal', 0xf0b8a8, 0xf8e8ee, 0.18]);
+    (root.SET3D = root.SET3D || {}).specs = [FR[0], browline, hexRose, monocle, threeD, FR[5], goggles, FR[2], ski, caseItem, FR[10]];
+  }
 
   const S = (root.SET3D = root.SET3D || {});
   S.fruits = fruits; S.veg = veg; S.stones = stones; S.space = space;

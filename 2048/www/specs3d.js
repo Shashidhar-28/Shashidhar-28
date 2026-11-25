@@ -22,6 +22,9 @@
       square: () => { s.moveTo(-0.7, 0.8); s.lineTo(0.7, 0.8); s.quadraticCurveTo(1.0, 0.8, 1.0, 0.5); s.lineTo(1.0, -0.5); s.quadraticCurveTo(1.0, -0.8, 0.7, -0.8); s.lineTo(-0.7, -0.8); s.quadraticCurveTo(-1.0, -0.8, -1.0, -0.5); s.lineTo(-1.0, 0.5); s.quadraticCurveTo(-1.0, 0.8, -0.7, 0.8); },
       wayfarer: () => { s.moveTo(-1.0, 0.7); s.quadraticCurveTo(-1.0, 0.85, -0.8, 0.85); s.lineTo(0.85, 0.85); s.quadraticCurveTo(1.05, 0.85, 1.0, 0.65); s.lineTo(0.88, -0.35); s.quadraticCurveTo(0.8, -0.9, 0.3, -0.9); s.lineTo(-0.4, -0.9); s.quadraticCurveTo(-0.95, -0.9, -0.97, -0.3); s.lineTo(-1.0, 0.7); },
       aviator: () => { s.moveTo(-1.0, 0.55); s.bezierCurveTo(-1.0, 0.9, -0.5, 0.95, 0, 0.92); s.bezierCurveTo(0.6, 0.9, 1.05, 0.85, 1.0, 0.45); s.bezierCurveTo(0.95, -0.4, 0.45, -1.05, 0, -1.05); s.bezierCurveTo(-0.55, -1.05, -1.0, -0.3, -1.0, 0.55); },
+      hex: () => { s.moveTo(-0.55, 0.92); s.lineTo(0.6, 0.92); s.lineTo(1.0, 0.35); s.lineTo(0.92, -0.45); s.lineTo(0.4, -0.92); s.lineTo(-0.4, -0.92); s.lineTo(-0.95, -0.45); s.lineTo(-1.0, 0.35); s.lineTo(-0.55, 0.92); },
+      butterfly: () => { s.moveTo(-1.08, 0.98); s.quadraticCurveTo(-0.2, 0.78, 0.95, 0.62); s.lineTo(0.92, -0.15); s.quadraticCurveTo(0.7, -0.88, 0.0, -0.88); s.quadraticCurveTo(-0.85, -0.82, -1.08, 0.98); },
+      brow: () => { s.moveTo(-1.0, 0.55); s.quadraticCurveTo(-1.0, 0.85, -0.7, 0.88); s.lineTo(0.75, 0.9); s.quadraticCurveTo(1.05, 0.9, 1.02, 0.6); s.lineTo(0.9, -0.3); s.quadraticCurveTo(0.7, -0.88, 0.1, -0.88); s.quadraticCurveTo(-0.8, -0.85, -0.95, -0.2); s.lineTo(-1.0, 0.55); },
       cat: () => { s.moveTo(-1.0, 0.1); s.quadraticCurveTo(-1.05, 0.6, -0.8, 0.75); s.lineTo(0.7, 0.95); s.quadraticCurveTo(1.15, 0.98, 1.05, 0.5); s.lineTo(0.8, -0.55); s.quadraticCurveTo(0.55, -0.95, 0.1, -0.9); s.lineTo(-0.3, -0.85); s.quadraticCurveTo(-0.9, -0.7, -1.0, 0.1); }
     };
     P[shape]();
@@ -45,11 +48,11 @@
   let tort = null;
   function makeGlasses(f) {
     tort = tort || tortoiseTexture();
-      const [shape, kind, col, lcol, lop, tt] = f;
+      const [shape, kind, col, lcol, lop, tt, brow] = f;
       const g = new THREE.Group();
       const pts = outline(shape);
       const frameMat = kind === 'metal'
-        ? new THREE.MeshStandardMaterial({ color: col, metalness: 1, roughness: 0.3 })
+        ? new THREE.MeshStandardMaterial({ color: col, metalness: 0.9, roughness: 0.25, envMapIntensity: 2.4, emissive: col, emissiveIntensity: 0.2 })
         : new THREE.MeshPhysicalMaterial({ color: tt ? 0xffffff : col, map: tt ? tort : null, metalness: 0, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.08 });
       const lensMat = new THREE.MeshPhysicalMaterial({ color: lcol, metalness: 0, roughness: 0.03, transparent: true, opacity: lop + 0.25, envMapIntensity: 1.6, clearcoat: 1, side: THREE.DoubleSide });
       const rimW = kind === 'metal' ? 0.07 : 0.17, depth = kind === 'metal' ? 0.12 : 0.26;
@@ -59,6 +62,13 @@
       rim.position.z = -depth / 2;
       const lens = new THREE.Mesh(new THREE.ShapeGeometry(new THREE.Shape(scaled(pts, 1.0 - rimW + 0.03))), lensMat);
       const eye = new THREE.Group(); eye.add(rim, lens);
+      if (brow) {
+        const top = scaled(pts, 1.03).filter(p => p.y > 0.3).sort((a, b) => a.x - b.x).map(p => new THREE.Vector3(p.x, p.y, 0));
+        const bm = new THREE.MeshPhysicalMaterial({ color: brow, roughness: 0.2, clearcoat: 1 });
+        eye.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(top), 30, 0.13, 10), bm));
+        const fill = scaled(pts, 1.0).filter(p => p.y > 0.3);
+        eye.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(fill.sort((a, b) => a.x - b.x).map(p => new THREE.Vector3(p.x, p.y - 0.12, 0))), 30, 0.09, 10), bm));
+      }
       const L = eye, R = eye.clone(); L.position.x = -1.17; R.position.x = 1.17;
       g.add(L, R);
       // bridge
@@ -77,5 +87,6 @@
       g.rotation.set(0.24, -0.42, -0.02);
       return g;
   }
+  root.makeGlasses3D = makeGlasses;
   (root.SET3D = root.SET3D || {}).specs = FRAMES.map(f => () => makeGlasses(f));
 })(this);
