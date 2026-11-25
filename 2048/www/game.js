@@ -69,7 +69,7 @@
     animals: { name: '🐶 Animals', labels: ['🐜','🐭','🐱','🐶','🐰','🦊','🐯','🐼','🦁','🐘','🐉'] },
     veg: { name: '🥕 Vegetables', labels: ['🧄','🧅','🥔','🥕','🌽','🥒','🍅','🥦','🍆','🌶️','🫑'] },
     tiffin: { name: '🍛 Indian Tiffins', labels: ['🥥','🧆','🥟','🫓','🍚','🥘','🍲','🍮','🍵','☕','🍛'] },
-    stones: { name: '💎 Stones', labels: ['🪨','⚪','🟤','🟠','🟡','🟢','🔵','🟣','🔴','🔷','💎'] },
+    stones: { name: '💎 Stones & Gems', labels: ['🪨','🟡','⚪','🔹','🟢','🟣','🔵','❤️','🔷','💎','💍'] },
     specs: { name: '👓 Spectacles', labels: SPECS },
     space: { name: '🚀 Space', labels: ['⭐','🌙','🪐','☄️','🌍','🌞','🛰️','🚀','👽','🌌','🏆'] }
   };

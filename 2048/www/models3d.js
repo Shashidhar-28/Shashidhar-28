@@ -260,16 +260,60 @@
   ];
 
   // ---------- stones ----------
+  function gemMat(color, op) {
+    return new THREE.MeshPhysicalMaterial({ color, metalness: 0.15, roughness: 0.03, flatShading: true, transparent: true, opacity: op || 0.93, envMapIntensity: 1.5, clearcoat: 1, side: THREE.DoubleSide });
+  }
+  function cutShape(shape, color, o) {
+    o = o || {};
+    const m = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: o.depth || 0.5, bevelEnabled: true, bevelSize: o.bs || 0.16, bevelThickness: o.bt || 0.22, bevelSegments: o.seg || 1, curveSegments: o.cs || 10 }), gemMat(color, o.op));
+    m.position.z = -(o.depth || 0.5) / 2;
+    return m;
+  }
   const stones = [
     () => { const r = new THREE.Mesh(wobble(new THREE.IcosahedronGeometry(1, 3), 0.28, 1.8, 2.1), mat(0x7b7b7f, { roughness: 0.9, flatShading: true, bumpMap: noiseBump(4, 400), bumpScale: 1 })); r.scale.set(1.3, 0.85, 1); return pose(G(r), 0.3, -0.4, 0.1); },
+    () => { // gold nugget
+      const n = new THREE.Mesh(wobble(new THREE.IcosahedronGeometry(1, 3), 0.3, 2.4, 5.3), new THREE.MeshStandardMaterial({ color: 0xe6a81c, metalness: 1, roughness: 0.28 })); n.scale.set(1.2, 0.85, 0.9);
+      return pose(G(n), 0.3, -0.4, 0.1);
+    },
+    () => { // pearl
+      const t = grad([[0, '#e8d6dc'], [0.5, '#fff8fa'], [1, '#dfe8f4']]);
+      return pose(G(sph(0.95, mat(0xffffff, { map: t, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.6 }))));
+    },
     () => crystal(0xf4f6ff, 0.55),
-    () => { const a = new THREE.Mesh(wobble(new THREE.SphereGeometry(1, 48, 36), 0.06, 1.5, 4), mat(0xe08a10, { roughness: 0.04, transparent: true, opacity: 0.85, clearcoat: 1, envMapIntensity: 2 })); a.scale.set(1.2, 0.9, 0.9); return pose(G(a)); },
-    () => gem(0xe8a010), () => gem(0x4fb81f, { opacity: 0.9 }),
-    () => gem(0x0f8a48, { seg: 8, opacity: 0.9 }),
-    () => { const t = tex(256, 256, (g, w, h) => { g.fillStyle = '#25b8b0'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(40,70,60,.6)'; g.lineWidth = 2; for (let i = 0; i < 24; i++) { g.beginPath(); let x = rnd() * w, y = rnd() * h; g.moveTo(x, y); for (let k = 0; k < 5; k++) { x += rnd() * 40 - 20; y += rnd() * 40 - 20; g.lineTo(x, y); } g.stroke(); } });
-      const s = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 36), mat(0xffffff, { map: t, roughness: 0.35, clearcoat: 0.6 })); s.scale.set(1.1, 0.8, 1); return pose(G(s)); },
-    () => gem(0x1432b8, { opacity: 0.92 }), () => gem(0x7a22c0), () => gem(0xc00a22, { opacity: 0.92 }),
-    () => gem(0xd8ecff, { seg: 12, opacity: 0.7 })
+    () => { // emerald cut
+      const s = new THREE.Shape(), w = 0.75, h = 1.0, c = 0.3;
+      s.moveTo(-w + c, -h); s.lineTo(w - c, -h); s.lineTo(w, -h + c); s.lineTo(w, h - c); s.lineTo(w - c, h); s.lineTo(-w + c, h); s.lineTo(-w, h - c); s.lineTo(-w, -h + c); s.closePath();
+      return pose(G(cutShape(s, 0x0d8a4a, { depth: 0.5, bs: 0.22, bt: 0.28, seg: 2, op: 0.95 })), 0.7, -0.45, 0.15);
+    },
+    () => { // amethyst geode
+      const g = new THREE.Group(), shell = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 28, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mat(0x6a625c, { roughness: 0.95, side: THREE.DoubleSide, bumpMap: noiseBump(4, 400), bumpScale: 1.5 }));
+      g.add(shell);
+      const rim = new THREE.Mesh(new THREE.RingGeometry(0.88, 1.04, 48), mat(0xc8b8a0, { roughness: 0.7, side: THREE.DoubleSide })); rim.rotation.x = Math.PI / 2; g.add(rim);
+      const cm = gemMat(0x8a3ad0, 0.95);
+      for (let i = 0; i < 70; i++) { const u = rnd() * 6.28, v = rnd() * 1.05, d = new THREE.Vector3(Math.sin(v) * Math.cos(u), -Math.cos(v), Math.sin(v) * Math.sin(u)); const k = new THREE.Mesh(new THREE.ConeGeometry(0.09 + rnd() * 0.05, 0.3 + rnd() * 0.25, 6), cm); k.position.copy(d.clone().multiplyScalar(0.85)); k.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().negate()); g.add(k); }
+      g.add(new THREE.Mesh(new THREE.SphereGeometry(0.85, 24, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mat(0x3a1a60, { roughness: 0.5, side: THREE.BackSide })));
+      return pose(g, 0.95, -0.3, 0);
+    },
+    () => { // turquoise cabochon
+      const t = tex(256, 256, (g, w, h) => { g.fillStyle = '#25b8b0'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(40,70,60,.6)'; g.lineWidth = 2; for (let i = 0; i < 24; i++) { g.beginPath(); let x = rnd() * w, y = rnd() * h; g.moveTo(x, y); for (let k = 0; k < 5; k++) { x += rnd() * 40 - 20; y += rnd() * 40 - 20; g.lineTo(x, y); } g.stroke(); } });
+      const s = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 36), mat(0xffffff, { map: t, roughness: 0.35, clearcoat: 0.6 })); s.scale.set(1.1, 0.8, 1); return pose(G(s));
+    },
+    () => { // ruby heart
+      const s = new THREE.Shape(); s.moveTo(0, -1); s.bezierCurveTo(-0.3, -0.7, -1.1, -0.2, -1.1, 0.4); s.bezierCurveTo(-1.1, 0.95, -0.4, 1.1, 0, 0.6); s.bezierCurveTo(0.4, 1.1, 1.1, 0.95, 1.1, 0.4); s.bezierCurveTo(1.1, -0.2, 0.3, -0.7, 0, -1);
+      return pose(G(cutShape(s, 0xc4082a, { depth: 0.4, bs: 0.18, bt: 0.22, seg: 1, cs: 7, op: 0.95 })), 0.5, -0.4, 0);
+    },
+    () => { // sapphire teardrop
+      const s = new THREE.Shape(); s.moveTo(0, 1.15); s.bezierCurveTo(0.3, 0.5, 0.8, 0.1, 0.8, -0.3); s.bezierCurveTo(0.8, -0.85, -0.8, -0.85, -0.8, -0.3); s.bezierCurveTo(-0.8, 0.1, -0.3, 0.5, 0, 1.15);
+      return pose(G(cutShape(s, 0x1432b8, { depth: 0.4, bs: 0.2, bt: 0.24, seg: 2, cs: 8, op: 0.95 })), 0.65, -0.45, -0.2);
+    },
+    () => gem(0xd8ecff, { seg: 12, opacity: 0.7 }),
+    () => { // diamond ring
+      const gold = new THREE.MeshStandardMaterial({ color: 0xf0c030, metalness: 1, roughness: 0.18 });
+      const band = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.14, 20, 64), gold);
+      const stone = gem(0xe8f4ff, { seg: 12, opacity: 0.75 }); stone.rotation.set(0, 0, 0); stone.scale.setScalar(0.5); stone.position.y = 1.25;
+      const prong = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.22, 0.2, 12), gold); prong.position.y = 1.05;
+      return pose(G(band, prong, stone), 0.25, -0.5, 0);
+    }
   ];
 
   // ---------- space ----------
