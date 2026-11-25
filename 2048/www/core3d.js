@@ -40,7 +40,7 @@
       scene.add(g);
       const box = new THREE.Box3().setFromObject(g), ctr = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
       const t = 2 * Math.tan(cam.fov * Math.PI / 360);
-      const dist = Math.max(size.x / (t * (W / H)), size.y / t) * 1.08 + size.z * 0.5;
+      const dist = Math.max(size.x / (t * (W / H)), size.y / t) * 1.2 + size.z * 0.5;
       cam.position.set(ctr.x, ctr.y, ctr.z + dist); cam.lookAt(ctr);
       renderer.render(scene, cam);
       const c = document.createElement('canvas'); c.width = W; c.height = H;

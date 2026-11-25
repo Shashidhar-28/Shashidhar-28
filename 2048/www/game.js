@@ -65,7 +65,7 @@
   // ---------- Tile sets (index 0 = tile 2 ... index 10 = tile 2048) ----------
   const TILESETS = {
     numbers: { name: '1 2 3 Numbers', labels: null },
-    fruits: { name: '🍎 Fruits', labels: ['🍒','🍓','🍋','🍊','🍎','🍐','🍑','🍍','🍉','🥭','🍇'] },
+    fruits: { name: '🍎 Fruits', labels: ['🍒','🍓','🍋','🍌','🍎','🍊','🍑','🥭','🍍','🍉','🍇'] },
     animals: { name: '🐶 Animals', labels: ['🐜','🐭','🐱','🐶','🐰','🦊','🐯','🐼','🦁','🐘','🐉'] },
     veg: { name: '🥕 Vegetables', labels: ['🌶️','🫛','🥒','🥕','🍅','🧅','🍆','🥒','🥦','🥬','🎃'] },
     tiffin: { name: '🍛 Indian Tiffins', labels: ['🥥','🧆','🥟','🫓','🍚','🥘','🍲','🍮','🍵','☕','🍛'] },

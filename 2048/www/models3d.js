@@ -102,85 +102,137 @@
   }
 
   // ---------- fruits ----------
+  // a fruit cut in half: rind dome + flat flesh face (faces +z)
+  function cutHalf(r, rindMat, discMat, sx, sy, sz) {
+    const g = new THREE.Group();
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(r, 48, 32, 0, Math.PI * 2, 0, Math.PI / 2), rindMat); dome.rotation.x = -Math.PI / 2;
+    rindMat.side = THREE.DoubleSide;
+    g.add(dome, new THREE.Mesh(new THREE.CircleGeometry(r, 56), discMat));
+    g.scale.set(sx || 1, sy || 1, sz || 1); return g;
+  }
+  const cs = (fn) => tex(256, 256, fn);
+  const citrusDisc = (rind, flesh, n, gap) => mat(0xffffff, { roughness: 0.3, clearcoat: 0.5, map: cs((g, w, h) => {
+    g.fillStyle = rind; g.beginPath(); g.arc(128, 128, 128, 0, 7); g.fill();
+    g.fillStyle = '#fff3d8'; g.beginPath(); g.arc(128, 128, 118, 0, 7); g.fill();
+    for (let i = 0; i < n; i++) { const a0 = i / n * 6.283 + 0.04, a1 = (i + 1) / n * 6.283 - 0.04; const gr = g.createRadialGradient(128, 128, 10, 128, 128, 112); gr.addColorStop(0, flesh[0]); gr.addColorStop(1, flesh[1]); g.fillStyle = gr; g.beginPath(); g.moveTo(128, 128); g.arc(128, 128, 112, a0, a1); g.closePath(); g.fill(); g.strokeStyle = 'rgba(255,255,255,.45)'; g.lineWidth = 2; for (let k = 0; k < 6; k++) { const a = a0 + (a1 - a0) * (0.2 + 0.6 * rnd()); g.beginPath(); g.moveTo(128 + Math.cos(a) * 20, 128 + Math.sin(a) * 20); g.lineTo(128 + Math.cos(a) * 105, 128 + Math.sin(a) * 105); g.stroke(); } }
+    g.fillStyle = '#fff3d8'; g.beginPath(); g.arc(128, 128, 9, 0, 7); g.fill();
+  }) });
   const fruits = [
     () => { // cherries
-      const m = mat(0x9a0a1c, { roughness: 0.12, clearcoat: 1 });
-      const a = sph(0.55, m, -0.55, -0.55, 0), b = sph(0.55, m, 0.6, -0.65, 0.15);
-      const s1 = tube([[-0.5, -0.05, 0], [-0.3, 0.5, 0], [0, 1.1, 0]], 0.04, STEM()), s2 = tube([[0.55, -0.15, 0.1], [0.4, 0.5, 0], [0, 1.1, 0]], 0.04, STEM());
-      const l = leaf(GREEN(), 0.8, 0.28); l.position.set(0, 1.1, 0); l.rotation.set(-1.2, 0.5, 0.9);
-      return pose(G(a, b, s1, s2, l));
+      const m = mat(0x8a0818, { roughness: 0.1, clearcoat: 1, envMapIntensity: 1.4 });
+      const a = sph(0.55, m, -0.55, -0.55, 0, 1, 0.95, 1), b = sph(0.55, m, 0.6, -0.65, 0.15, 1, 0.95, 1), c = sph(0.5, m, 0.05, -0.85, 0.4, 1, 0.95, 1);
+      const s1 = tube([[-0.5, -0.05, 0], [-0.3, 0.5, 0], [0, 1.1, 0]], 0.04, STEM()), s2 = tube([[0.55, -0.15, 0.1], [0.4, 0.5, 0], [0, 1.1, 0]], 0.04, STEM()), s3 = tube([[0.05, -0.4, 0.4], [0.05, 0.4, 0.2], [0, 1.1, 0]], 0.04, STEM());
+      const l = leaf(GREEN(), 0.9, 0.3); l.position.set(0, 1.1, 0); l.rotation.set(-1.2, 0.5, 0.9);
+      const l2 = leaf(GREEN(), 0.7, 0.25); l2.position.set(0, 1.1, 0); l2.rotation.set(-1.0, -0.8, -0.9);
+      return pose(G(a, b, c, s1, s2, s3, l, l2));
     },
-    () => { // strawberry
-      const t = tex(256, 256, (g, w, h) => {
+    () => { // strawberries
+      const t = cs((g, w, h) => {
         const gr = g.createLinearGradient(0, h, 0, 0); gr.addColorStop(0, '#b3121c'); gr.addColorStop(1, '#e0222e'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
         for (let i = 0; i < 110; i++) { const x = rnd() * w, y = rnd() * h * 0.9 + h * 0.05; g.fillStyle = '#6b0a10'; g.beginPath(); g.ellipse(x + 1, y + 1.5, 2.4, 3.4, 0, 0, 7); g.fill(); g.fillStyle = '#f2d56b'; g.beginPath(); g.ellipse(x, y, 2, 3, 0, 0, 7); g.fill(); }
       });
-      const body = lathe([[0, -1], [0.3, -0.85], [0.7, -0.35], [0.85, 0.15], [0.72, 0.6], [0.3, 0.78], [0, 0.78]], mat(0xffffff, { map: t, roughness: 0.3, clearcoat: 0.6 }));
-      const g = G(body);
-      for (let i = 0; i < 8; i++) { const c = cone(0.14, 0.6, GREEN()); c.scale.z = 0.35; const a = i / 8 * Math.PI * 2; c.position.set(Math.cos(a) * 0.3, 0.84, Math.sin(a) * 0.3); c.rotation.set(Math.sin(a) * 1.3, 0, -Math.cos(a) * 1.3); g.add(c); }
-      g.add(tube([[0, 0.8, 0], [0.05, 1.05, 0], [0.2, 1.25, 0]], 0.05, GREEN()));
+      const sm = mat(0xffffff, { map: t, roughness: 0.3, clearcoat: 0.6 }), g = new THREE.Group();
+      [[0, 0, 0, 1, 0], [0.95, -0.25, 0.1, 0.85, -0.5], [-0.85, -0.3, 0.2, 0.8, 0.5]].forEach(o => {
+        const body = lathe([[0, -1], [0.3, -0.85], [0.7, -0.35], [0.85, 0.15], [0.72, 0.6], [0.3, 0.78], [0, 0.78]], sm), b = G(body);
+        for (let i = 0; i < 8; i++) { const c = cone(0.14, 0.6, GREEN()); c.scale.z = 0.35; const a = i / 8 * Math.PI * 2; c.position.set(Math.cos(a) * 0.3, 0.84, Math.sin(a) * 0.3); c.rotation.set(Math.sin(a) * 1.3, 0, -Math.cos(a) * 1.3); b.add(c); }
+        b.add(tube([[0, 0.8, 0], [0.05, 1.05, 0], [0.2, 1.25, 0]], 0.05, GREEN()));
+        b.position.set(o[0], o[1], o[2]); b.scale.setScalar(o[3]); b.rotation.z = o[4]; g.add(b);
+      });
       return pose(g);
     },
-    () => { // lemon
-      const b = lathe([[0, -1.05], [0.14, -0.98], [0.55, -0.72], [0.85, -0.2], [0.85, 0.2], [0.55, 0.72], [0.14, 0.98], [0, 1.05]],
-        mat(0xf4d21a, { roughness: 0.35, bumpMap: noiseBump(2, 700), bumpScale: 0.35, map: grad([[0, '#e8b800'], [0.5, '#ffe53a'], [1, '#e8b800']], { speck: 300, speckColor: 'rgba(255,255,255,.2)' }) }));
-      const g = G(b); g.rotation.set(0.3, -0.4, 1.25); const l = leaf(GREEN(), 0.7, 0.25); l.position.set(0.04, 1.0, 0); l.rotation.set(0.3, 0.4, 0.4); b.add(l);
-      return G(g);
+    () => { // lemon whole + half
+      const lm = mat(0xf4d21a, { roughness: 0.35, bumpMap: noiseBump(2, 700), bumpScale: 0.1, map: grad([[0, '#e8b800'], [0.5, '#ffe53a'], [1, '#e8b800']], { speck: 300, speckColor: 'rgba(255,255,255,.2)' }) });
+      const w = lathe([[0, -1.05], [0.14, -0.98], [0.55, -0.72], [0.85, -0.2], [0.85, 0.2], [0.55, 0.72], [0.14, 0.98], [0, 1.05]], lm);
+      const wg = G(w); wg.rotation.set(0.3, -0.3, 1.45); wg.position.set(-0.6, -0.2, 0);
+      const lf = leaf(GREEN(), 0.8, 0.28); lf.position.set(-1.6, -0.1, 0); lf.rotation.set(0.3, 0.4, 1.5); 
+      const h = cutHalf(0.85, mat(0xf4d21a, { roughness: 0.35 }), citrusDisc('#f4d21a', ['#fff06a', '#f7da30'], 9), 1, 1, 0.9); h.position.set(0.9, 0.05, 0.2);
+      return pose(G(wg, lf, h), 0.2, -0.35, 0);
     },
-    () => { // orange
-      const o = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), mat(0xf28a12, { roughness: 0.4, bumpMap: noiseBump(2.4, 900), bumpScale: 0.5, map: grad([[0, '#d86a08'], [0.5, '#ff9a1f'], [1, '#e87a10']], { speck: 200, speckColor: 'rgba(255,200,100,.25)' }) }));
-      const l = leaf(GREEN(), 0.9, 0.3); l.position.set(0, 0.98, 0); l.rotation.set(-1.0, 0.2, 0.3);
-      const nub = sph(0.12, mat(0x3f6a1a), 0, 1.0, 0, 1, 0.5, 1);
-      return pose(G(o, l, nub));
+    () => { // bananas: pentagonal, tapered, curved
+      const g = new THREE.Group(), arc = 1.9, R = 1.5, TS = 48, RS = 5;
+      const bm = mat(0xffffff, { roughness: 0.4, clearcoat: 0.35, flatShading: true, map: grad([[0, '#6a8a20'], [0.06, '#e8c818'], [0.5, '#ffe238'], [0.94, '#eec214'], [1, '#5a3a0c']], { streaks: 6, streakColor: 'rgba(150,100,0,.25)' }) });
+      const one = () => {
+        const geo = new THREE.TorusGeometry(R, 0.34, RS, TS, arc), p = geo.attributes.position, v = new THREE.Vector3(), c = new THREE.Vector3();
+        for (let j = 0; j <= RS; j++) for (let i = 0; i <= TS; i++) {
+          const k = j * (TS + 1) + i, u = i / TS * arc, t = i / TS;
+          c.set(Math.cos(u) * R, Math.sin(u) * R, 0); v.fromBufferAttribute(p, k).sub(c);
+          const f = 0.32 + 0.68 * Math.pow(Math.sin(Math.PI * (0.05 + 0.9 * t)), 0.6); v.multiplyScalar(f);
+          p.setXYZ(k, c.x + v.x, c.y + v.y, c.z + v.z);
+        }
+        geo.computeVertexNormals();
+        const m = new THREE.Mesh(geo, bm); m.rotation.z = -Math.PI / 2 - arc / 2;
+        const tip = sph(0.09, mat(0x2a1808), Math.cos(arc) * R, Math.sin(arc) * R, 0); tip.position.applyEuler(m.rotation);
+        const end = sph(0.13, mat(0x4a5a1a), R, 0, 0); end.position.applyEuler(m.rotation);
+        return G(m, tip, end);
+      };
+      [[-0.5, 0.25, 0.1, 0], [0, 0, 0, 0.05], [0.5, -0.25, -0.1, 0.1], [1.0, -0.5, -0.2, 0.15]].forEach((o, i) => { const b = one(); b.position.set(0, o[0] * 0.55, o[2]); b.rotation.z = o[3]; g.add(b); });
+      const st = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.8, 12), mat(0x6a7a28, { roughness: 0.8 })); st.position.set(-1.2, -0.05, 0); st.rotation.z = 0.9; g.add(st);
+      return pose(g, 0.2, -0.3, 0);
     },
-    () => { // apple
-      const a = lathe([[0, -0.85], [0.45, -0.82], [0.88, -0.5], [1.0, 0.05], [0.88, 0.55], [0.5, 0.82], [0.14, 0.76], [0, 0.6]],
-        mat(0xffffff, { roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.1, map: grad([[0, '#a80d14'], [0.55, '#d3161e'], [0.9, '#d9a02a'], [1, '#9db83a']], { streaks: 14, streakColor: 'rgba(90,0,0,.1)' }) }));
-      const st = tube([[0, 0.55, 0], [0.02, 0.85, 0], [0.12, 1.1, 0]], 0.05, STEM()), l = leaf(GREEN(), 0.8, 0.28); l.position.set(0.05, 0.9, 0); l.rotation.set(-0.8, 0.3, -1.1);
-      return pose(G(a, st, l));
+    () => { // apple + half
+      const am = mat(0xffffff, { roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.1, map: grad([[0, '#a80d14'], [0.55, '#d3161e'], [0.9, '#d9a02a'], [1, '#9db83a']], { streaks: 14, streakColor: 'rgba(90,0,0,.1)' }) });
+      const a = lathe([[0, -0.85], [0.45, -0.82], [0.88, -0.5], [1.0, 0.05], [0.88, 0.55], [0.5, 0.82], [0.14, 0.76], [0, 0.6]], am); a.position.x = -0.55;
+      const st = tube([[-0.55, 0.55, 0], [-0.53, 0.85, 0], [-0.43, 1.1, 0]], 0.05, STEM()), l = leaf(GREEN(), 0.8, 0.28); l.position.set(-0.5, 0.9, 0); l.rotation.set(-0.8, 0.3, -1.1);
+      const dm = mat(0xffffff, { roughness: 0.4, map: cs((g, w, h) => { g.fillStyle = '#c4121a'; g.beginPath(); g.arc(128, 128, 128, 0, 7); g.fill(); g.fillStyle = '#f8f0c8'; g.beginPath(); g.arc(128, 128, 120, 0, 7); g.fill(); g.fillStyle = '#e8dca0'; g.beginPath(); g.ellipse(128, 120, 34, 50, 0, 0, 7); g.fill(); g.fillStyle = '#6a3a14'; [[112, 120], [144, 120], [118, 140], [138, 140]].forEach(p => { g.beginPath(); g.ellipse(p[0], p[1], 5, 9, 0, 0, 7); g.fill(); }); }) });
+      const half = cutHalf(0.95, mat(0xc4121a, { roughness: 0.2, clearcoat: 1 }), dm, 1, 0.95, 0.9); half.position.set(1.05, -0.05, -0.1);
+      return pose(G(a, st, l, half), 0.25, -0.4, 0);
     },
-    () => { // pear
-      const p = lathe([[0, -0.92], [0.5, -0.86], [0.8, -0.5], [0.66, 0.05], [0.42, 0.45], [0.3, 0.75], [0.1, 0.9], [0, 0.9]],
-        mat(0xffffff, { roughness: 0.4, clearcoat: 0.3, map: grad([[0, '#a8b820'], [0.6, '#c4cc2e'], [1, '#8ea01c']], { speck: 500, speckColor: 'rgba(120,90,20,.35)' }) }));
-      const st = tube([[0, 0.85, 0], [0.03, 1.1, 0], [0.15, 1.35, 0]], 0.05, STEM());
-      return pose(G(p, st));
+    () => { // orange + half
+      const om = mat(0xf28a12, { roughness: 0.4, bumpMap: noiseBump(2.4, 900), bumpScale: 0.15, map: grad([[0, '#d86a08'], [0.5, '#ff9a1f'], [1, '#e87a10']], { speck: 200, speckColor: 'rgba(255,200,100,.25)' }) });
+      const o = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), om); o.position.x = -0.55;
+      const l = leaf(GREEN(), 0.9, 0.3); l.position.set(-0.55, 0.98, 0); l.rotation.set(-1.0, 0.2, 0.3); const nub = sph(0.12, mat(0x3f6a1a), -0.55, 1.0, 0, 1, 0.5, 1);
+      const half = cutHalf(0.95, mat(0xf28a12, { roughness: 0.4 }), citrusDisc('#f28a12', ['#ffb43a', '#ff8a10'], 10), 1, 1, 0.9); half.position.set(1.15, -0.1, 0);
+      return pose(G(o, l, nub, half), 0.25, -0.4, 0);
     },
-    () => { // peach
-      const p = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), mat(0xffffff, { roughness: 0.85, map: grad([[0, '#e8845a'], [0.5, '#f9b27a'], [1, '#ef7b6a']], { speck: 600, speckColor: 'rgba(255,230,200,.3)' }) }));
-      p.scale.set(1, 0.95, 0.97);
-      const l = leaf(GREEN(), 1.0, 0.3); l.position.set(0.1, 0.92, 0); l.rotation.set(-0.9, 0.4, -1.0);
-      return pose(G(p, l, tube([[0, 0.9, 0], [0, 1.05, 0]], 0.04, STEM())));
+    () => { // pomegranate + half
+      const pm = mat(0xffffff, { roughness: 0.3, clearcoat: 0.6, map: grad([[0, '#8a0a18'], [0.6, '#c4162a'], [1, '#e04a3a']], { speck: 300, speckColor: 'rgba(255,200,150,.2)' }) });
+      const p = new THREE.Mesh(new THREE.SphereGeometry(0.95, 56, 40), pm); p.position.x = -0.6;
+      const g = G(p); for (let i = 0; i < 6; i++) { const c = cone(0.1, 0.4, mat(0x9a1020)); c.scale.z = 0.4; const a = i / 6 * 6.28; c.position.set(-0.6 + Math.cos(a) * 0.17, 0.98, Math.sin(a) * 0.17); c.rotation.set(Math.sin(a) * 0.5, 0, -Math.cos(a) * 0.5); g.add(c); }
+      const dm = mat(0xffffff, { roughness: 0.25, clearcoat: 0.6, map: cs((c, w, h) => { c.fillStyle = '#7a1018'; c.beginPath(); c.arc(128, 128, 128, 0, 7); c.fill(); c.fillStyle = '#f2e0b0'; c.beginPath(); c.arc(128, 128, 118, 0, 7); c.fill(); for (let i = 0; i < 520; i++) { const a = rnd() * 6.283, d = Math.sqrt(rnd()) * 108, x = 128 + Math.cos(a) * d, y = 128 + Math.sin(a) * d; const gr = c.createRadialGradient(x - 2, y - 2, 1, x, y, 9); gr.addColorStop(0, '#ff6a78'); gr.addColorStop(1, '#a8102a'); c.fillStyle = gr; c.beginPath(); c.arc(x, y, 8, 0, 7); c.fill(); } c.strokeStyle = '#f2e0b0'; c.lineWidth = 5; for (let i = 0; i < 6; i++) { const a = i / 6 * 6.283; c.beginPath(); c.moveTo(128, 128); c.lineTo(128 + Math.cos(a) * 112, 128 + Math.sin(a) * 112); c.stroke(); } }) });
+      const half = cutHalf(0.92, pm.clone(), dm, 1, 1, 0.9); half.position.set(1.1, -0.05, 0);
+      return pose(G(g, half), 0.25, -0.4, 0);
+    },
+    () => { // mango + leaf
+      const mm = mat(0xffffff, { roughness: 0.3, clearcoat: 0.6, map: grad([[0, '#6aa82a'], [0.4, '#e8b020'], [0.75, '#f07a1c'], [1, '#d83a2a']], { speck: 300, speckColor: 'rgba(255,240,180,.35)' }) });
+      const g = new THREE.Group();
+      [[-0.45, 0, 0.25, 1], [0.7, -0.15, -0.3, 0.85]].forEach((o, i) => {
+        const b = lathe([[0, -0.9], [0.32, -0.82], [0.7, -0.4], [0.82, 0.1], [0.62, 0.62], [0.25, 0.88], [0, 0.88]], mm); b.scale.set(1.05, 1, 0.78);
+        const m = G(b); const l = leaf(GREEN(), 1.2, 0.34); l.position.set(0, 0.85, 0); l.rotation.set(-0.7, 0.2, -1.0); m.add(l, tube([[0, 0.85, 0], [0.04, 1.05, 0]], 0.045, STEM()));
+        m.position.set(o[0], o[1], 0); m.rotation.z = o[2]; m.scale.setScalar(o[3]); g.add(m);
+      });
+      return pose(g, 0.25, -0.5, 0);
     },
     () => { // pineapple
       const t = tex(256, 256, (g, w, h) => {
         g.fillStyle = '#e4a21a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#7a4a0c'; g.lineWidth = 3;
         for (let i = -8; i < 20; i++) { g.beginPath(); g.moveTo(i * 22, 0); g.lineTo(i * 22 + 256, 256); g.stroke(); g.beginPath(); g.moveTo(i * 22 + 256, 0); g.lineTo(i * 22, 256); g.stroke(); }
       }, [2, 1]);
-      const b = lathe([[0, -1], [0.55, -0.92], [0.78, -0.4], [0.8, 0.2], [0.62, 0.8], [0.3, 0.98], [0, 1]], mat(0xffffff, { map: t, roughness: 0.55, bumpMap: t, bumpScale: 1.5 }));
+      const b = lathe([[0, -1], [0.55, -0.92], [0.78, -0.4], [0.8, 0.2], [0.62, 0.8], [0.3, 0.98], [0, 1]], mat(0xffffff, { map: t, roughness: 0.55, bumpMap: t, bumpScale: 1.0 }));
       const g = G(b), lm = mat(0x2f7a24, { roughness: 0.5 });
-      for (let i = 0; i < 12; i++) { const c = cone(0.1, 1.1 - (i % 3) * 0.15, lm); c.scale.z = 0.4; const a = i / 12 * Math.PI * 2; c.position.set(Math.cos(a) * 0.15, 1.35, Math.sin(a) * 0.15); c.rotation.set(Math.sin(a) * 0.5, 0, -Math.cos(a) * 0.5); g.add(c); }
+      for (let i = 0; i < 16; i++) { const c = cone(0.1, 1.2 - (i % 3) * 0.18, lm); c.scale.z = 0.4; const a = i / 16 * Math.PI * 2; c.position.set(Math.cos(a) * 0.15, 1.35, Math.sin(a) * 0.15); c.rotation.set(Math.sin(a) * 0.55, 0, -Math.cos(a) * 0.55); g.add(c); }
       return pose(g);
     },
-    () => { // watermelon
+    () => { // watermelon + slice
       const t = tex(256, 256, (g, w, h) => {
         g.fillStyle = '#2f9a3a'; g.fillRect(0, 0, w, h);
         for (let i = 0; i < 9; i++) { g.strokeStyle = '#124a1c'; g.lineWidth = 9 + rnd() * 6; g.beginPath(); const x = i * 28 + 8; g.moveTo(x, 0); for (let y = 0; y <= h; y += 16) g.lineTo(x + Math.sin(y * 0.1 + i) * 6, y); g.stroke(); }
       });
-      const m = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), mat(0xffffff, { map: t, roughness: 0.3, clearcoat: 0.5 })); m.scale.set(1.3, 1, 1);
-      return pose(G(m, tube([[0, 0.98, 0], [0.05, 1.15, 0]], 0.05, STEM())));
-    },
-    () => { // mango
-      const b = lathe([[0, -0.9], [0.32, -0.82], [0.7, -0.4], [0.82, 0.1], [0.62, 0.62], [0.25, 0.88], [0, 0.88]],
-        mat(0xffffff, { roughness: 0.3, clearcoat: 0.6, map: grad([[0, '#6aa82a'], [0.4, '#e8b020'], [0.75, '#f07a1c'], [1, '#d83a2a']], { speck: 300, speckColor: 'rgba(255,240,180,.35)' }) }));
-      b.scale.set(1.05, 1, 0.78); const l = leaf(GREEN(), 1.0, 0.3); l.position.set(0, 0.85, 0); l.rotation.set(-0.8, 0.2, -1.0);
-      return pose(G(b, l, tube([[0, 0.85, 0], [0.04, 1.05, 0]], 0.045, STEM())), 0.25, -0.5, 0.4);
+      const m = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), mat(0xffffff, { map: t, roughness: 0.3, clearcoat: 0.5 })); m.scale.set(1.2, 0.95, 0.95); m.position.set(-0.75, -0.1, -0.2);
+      const ft = cs((g, w, h) => {
+        g.fillStyle = '#2f9a3a'; g.fillRect(0, 0, w, h); g.fillStyle = '#d8f0c0'; g.beginPath(); g.arc(128, 128, 116, 0, 7); g.fill();
+        const gr = g.createRadialGradient(128, 128, 0, 128, 128, 104); gr.addColorStop(0, '#ff4a5a'); gr.addColorStop(1, '#f2304a'); g.fillStyle = gr; g.beginPath(); g.arc(128, 128, 104, 0, 7); g.fill();
+        for (let i = 0; i < 26; i++) { const a = rnd() * 6.283, d = 20 + rnd() * 70; g.fillStyle = '#1a0a0a'; g.beginPath(); g.ellipse(128 + Math.cos(a) * d, 128 + Math.sin(a) * d, 3, 6, a, 0, 7); g.fill(); }
+      });
+      const fm = mat(0xffffff, { map: ft, roughness: 0.25, clearcoat: 0.7 });
+      const slice = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.4, 56, 1, false, 0, Math.PI), [mat(0xffffff, { map: t, roughness: 0.3 }), fm, fm]);
+      slice.rotation.x = Math.PI / 2; slice.rotation.z = Math.PI; slice.position.set(1.0, -0.15, 0.2);
+      return pose(G(m, slice, tube([[-0.75, 0.82, -0.2], [-0.7, 1.0, -0.2]], 0.05, STEM())), 0.25, -0.35, 0);
     },
     () => { // grapes
-      const m = mat(0x4a1a6a, { roughness: 0.25, clearcoat: 1, envMapIntensity: 1.3 }), g = new THREE.Group();
-      const rows = [4, 4, 3, 2, 1];
-      rows.forEach((n, r) => { for (let i = 0; i < n; i++) { const x = (i - (n - 1) / 2) * 0.62, y = 0.7 - r * 0.52; g.add(sph(0.33, m, x + (rnd() - 0.5) * 0.06, y, (rnd() - 0.5) * 0.35)); g.add(sph(0.3, m, x * 0.9, y - 0.1, -0.35 + rnd() * 0.1)); } });
-      g.add(tube([[0, 0.85, 0], [0.05, 1.2, 0], [0.2, 1.4, 0]], 0.06, STEM()));
-      const l = leaf(GREEN(), 1.0, 0.45); l.position.set(0.1, 1.15, 0.1); l.rotation.set(-0.5, 0.3, -1.2); g.add(l);
+      const m = mat(0x4a1a6a, { roughness: 0.25, clearcoat: 1, envMapIntensity: 1.3 }), gm = mat(0x9acb3a, { roughness: 0.25, clearcoat: 1 }), g = new THREE.Group();
+      const bunch = (mm, ox, sc) => { const b = new THREE.Group(); [4, 4, 3, 2, 1].forEach((n, r) => { for (let i = 0; i < n; i++) { const x = (i - (n - 1) / 2) * 0.62, y = 0.7 - r * 0.52; b.add(sph(0.33, mm, x + (rnd() - 0.5) * 0.06, y, (rnd() - 0.5) * 0.35)); b.add(sph(0.3, mm, x * 0.9, y - 0.1, -0.35 + rnd() * 0.1)); } }); b.add(tube([[0, 0.85, 0], [0.05, 1.2, 0], [0.2, 1.4, 0]], 0.06, STEM())); b.position.x = ox; b.scale.setScalar(sc); return b; };
+      g.add(bunch(m, -0.6, 1)); g.add(bunch(gm, 1.3, 0.75));
+      const l = leaf(GREEN(), 1.0, 0.45); l.position.set(-0.4, 1.15, 0.1); l.rotation.set(-0.5, 0.3, -1.2); g.add(l);
       return pose(g, 0.15, -0.4, 0);
     }
   ];
