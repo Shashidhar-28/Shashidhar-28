@@ -403,6 +403,69 @@
     }
   ];
 
+  // ---------- eyewear variety (spectacles set) ----------
+  function rr(w, h, r) {
+    const s = new THREE.Shape(), x = -w / 2, y = -h / 2;
+    s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s;
+  }
+  function hole(shape, w, h, r, cx, cy) { const p = rr(w, h, r); const pts = p.getPoints(12).map(v => new THREE.Vector2(v.x + cx, v.y + cy)); shape.holes.push(new THREE.Path(pts)); }
+  const goldM = () => new THREE.MeshStandardMaterial({ color: 0xf0c030, metalness: 1, roughness: 0.2 });
+  const glassM = (c, op) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 0, roughness: 0.03, transparent: true, opacity: op, clearcoat: 1, envMapIntensity: 1.6, side: THREE.DoubleSide });
+
+  const monocle = () => {
+    const g = new THREE.Group(), gm = goldM();
+    g.add(new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.1, 18, 64), gm));
+    g.add(new THREE.Mesh(new THREE.CircleGeometry(0.9, 48), glassM(0xdbeeff, 0.4)));
+    const hook = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.04, 8, 20), gm); hook.position.set(0.95, -0.2, 0); g.add(hook);
+    g.add(tube([[0.95, -0.28, 0], [1.2, -1.0, 0.05], [0.7, -1.7, 0.15], [0.9, -2.3, 0.05], [1.3, -2.8, 0]], 0.025, gm));
+    for (let i = 0; i < 7; i++) { const t = i / 6, l = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.018, 6, 12), gm); l.position.set(1.0 + Math.sin(t * 4) * 0.2, -1.0 - t * 1.6, 0.05); l.rotation.x = i * 1.2; g.add(l); }
+    return pose(g, 0.15, -0.4, 0);
+  };
+  const threeD = () => {
+    const g = new THREE.Group(), card = mat(0x1d1d22, { roughness: 0.75 });
+    const o = rr(3.4, 1.35, 0.25); hole(o, 1.25, 0.85, 0.12, -0.9, 0); hole(o, 1.25, 0.85, 0.12, 0.9, 0);
+    const f = new THREE.Mesh(new THREE.ExtrudeGeometry(o, { depth: 0.05, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02, bevelSegments: 2 }), card); f.position.z = -0.025; g.add(f);
+    [[-0.9, 0xff2a20], [0.9, 0x20d8ff]].forEach(a => { const l = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.9), glassM(a[1], 0.7)); l.position.set(a[0], 0, 0.01); g.add(l); });
+    [-1, 1].forEach(s => { const t = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.4, 2.6), card); t.position.set(s * 1.7, 0.1, -1.3); g.add(t); });
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.2), mat(0xffffff)); w.position.set(0, -0.45, 0.04); g.add(w);
+    return pose(g, 0.2, -0.45, 0.05);
+  };
+  const goggles = () => {
+    const g = new THREE.Group(), sil = mat(0x1a60d0, { roughness: 0.25, clearcoat: 1 });
+    [-1, 1].forEach(s => {
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.85, 0.16, 18, 48), sil); rim.scale.set(1, 0.78, 1); rim.position.x = s * 1.05; g.add(rim);
+      const l = new THREE.Mesh(new THREE.SphereGeometry(0.85, 40, 20, 0, Math.PI * 2, 0, 0.9), glassM(0x6ad0ff, 0.55)); l.rotation.x = Math.PI / 2; l.scale.set(1, 1, 0.78); l.position.set(s * 1.05, 0, -0.1); l.scale.set(1, 0.7, 0.8); g.add(l);
+    });
+    g.add(tube([[-0.25, 0.1, 0], [0, 0.18, 0.03], [0.25, 0.1, 0]], 0.07, sil));
+    const strap = mat(0x15151a, { roughness: 0.8 });
+    g.add(tube([[-1.95, 0.05, 0], [-2.25, 0.05, -1.0], [-1.2, 0.1, -2.5], [0, 0.1, -2.8], [1.2, 0.1, -2.5], [2.25, 0.05, -1.0], [1.95, 0.05, 0]], 0.1, strap));
+    return pose(g, 0.35, -0.5, 0);
+  };
+  const ski = () => {
+    const g = new THREE.Group(), frame = mat(0xe04a10, { roughness: 0.3, clearcoat: 0.8 });
+    const o = rr(3.6, 1.7, 0.6); hole(o, 3.2, 1.35, 0.5, 0, 0);
+    const f = new THREE.Mesh(new THREE.ExtrudeGeometry(o, { depth: 0.35, bevelEnabled: true, bevelSize: 0.08, bevelThickness: 0.1, bevelSegments: 3 }), frame); f.position.z = -0.17; g.add(f);
+    const lens = new THREE.Mesh(new THREE.ShapeGeometry(rr(3.25, 1.4, 0.5)), new THREE.MeshPhysicalMaterial({ color: 0xf0a030, metalness: 0.7, roughness: 0.06, transparent: true, opacity: 0.88, envMapIntensity: 2.2, clearcoat: 1, side: THREE.DoubleSide })); lens.position.z = 0.0; g.add(lens);
+    const nose = mat(0x15151a, { roughness: 0.8 }); const n = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.45, 0.3), nose); n.position.set(0, -0.8, 0.0); g.add(n);
+    const band = mat(0x20242c, { roughness: 0.8 });
+    [-1, 1].forEach(s => { const b = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 2.6), band); b.position.set(s * 1.95, 0, -1.3); b.rotation.y = s * -0.12; g.add(b); const st = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.2, 2.4), mat(0xe04a10)); st.position.set(s * 1.95, 0, -1.3); st.rotation.y = s * -0.12; g.add(st); });
+    return pose(g, 0.2, -0.5, 0);
+  };
+  const caseItem = () => {
+    const g = new THREE.Group(), tt = tex(256, 256, (c, w, h) => { c.fillStyle = '#6a3a1a'; c.fillRect(0, 0, w, h); for (let i = 0; i < 1500; i++) { c.fillStyle = `rgba(${20 + rnd() * 40 | 0},${10 + rnd() * 20 | 0},0,.25)`; c.fillRect(rnd() * w, rnd() * h, 2, 2); } });
+    const leather = mat(0xffffff, { map: tt, roughness: 0.55, clearcoat: 0.3, bumpMap: tt, bumpScale: 1 });
+    const body = new THREE.Mesh(new THREE.ExtrudeGeometry(rr(3.3, 1.3, 0.55), { depth: 0.9, bevelEnabled: true, bevelSize: 0.1, bevelThickness: 0.14, bevelSegments: 4, curveSegments: 16 }), leather); body.position.z = -0.45; g.add(body);
+    const gm = goldM(), z = 0.62;
+    [-0.5, 0.5].forEach(x => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.045, 10, 36), gm); r.position.set(x, 0.05, z); g.add(r); });
+    g.add(tube([[-0.18, 0.15, z], [0, 0.22, z], [0.18, 0.15, z]], 0.04, gm));
+    const cl = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.1), gm); cl.position.set(0, -0.5, z); g.add(cl);
+    const seam = new THREE.Mesh(new THREE.BoxGeometry(3.3, 0.03, 0.04), mat(0x2a1408)); seam.position.set(0, 0.0, 0.0); seam.position.z = 0.58; seam.position.y = 0.45; g.add(seam);
+    return pose(g, 0.55, -0.45, 0.05);
+  };
+  const FR = (root.SET3D || {}).specs;
+  if (FR && FR.length === 11) (root.SET3D = root.SET3D || {}).specs = [FR[0], FR[1], monocle, threeD, FR[3], goggles, FR[5], FR[2], ski, caseItem, FR[10]];
+
   const S = (root.SET3D = root.SET3D || {});
   S.fruits = fruits; S.veg = veg; S.stones = stones; S.space = space;
 })(this);
