@@ -29,6 +29,10 @@
     numbers: { name: '1 2 3 Numbers', labels: null },
     fruits: { name: '🍎 Fruits', labels: ['🍒','🍓','🍋','🍊','🍎','🍐','🍑','🍍','🍉','🥭','🍇'] },
     animals: { name: '🐶 Animals', labels: ['🐜','🐭','🐱','🐶','🐰','🦊','🐯','🐼','🦁','🐘','🐉'] },
+    veg: { name: '🥕 Vegetables', labels: ['🧄','🧅','🥔','🥕','🌽','🥒','🍅','🥦','🍆','🌶️','🫑'] },
+    tiffin: { name: '🥞 Tiffins', labels: ['🍞','🥐','🥞','🧇','🍳','🥪','🌯','🥙','🍔','🍜','🍛'] },
+    stones: { name: '💎 Stones', labels: ['🪨','⚪','🟤','🟠','🟡','🟢','🔵','🟣','🔴','🔷','💎'] },
+    specs: { name: '👓 Spectacles', labels: ['🔍','🔎','👓','🕶️','🥽','🤓','🧐','😎','👀','🔭','🔬'] },
     space: { name: '🚀 Space', labels: ['⭐','🌙','🪐','☄️','🌍','🌞','🛰️','🚀','👽','🌌','🏆'] }
   };
 
