@@ -83,7 +83,7 @@
       const imgs = window.renderSet3D(setKey);
       if (imgs) {
         const L = imgs.map(u => `<img src="${u}" alt="">`);
-        if (setKey === 'specs' && window.EYE_PHOTOS) window.EYE_PHOTOS.forEach((u, i) => { if (2 + i < L.length) L[2 + i] = `<img class="photo" src="${u}" alt="">`; });
+        if (setKey === 'specs' && window.EYE_PHOTOS) window.EYE_PHOTOS.forEach((u, i) => { if (i < L.length) L[i] = `<img class="photo" src="${u}" alt="">`; });
         TILESETS[setKey].labels = L;
       }
     } catch (e) {}
