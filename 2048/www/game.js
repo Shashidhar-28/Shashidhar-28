@@ -154,7 +154,18 @@
     return String(v);
   }
 
+  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Dragon', veg: 'Bell pepper', tiffin: 'Curry rice', stones: 'Diamond ring', specs: 'Gold sunglasses', space: 'Trophy' };
+  function renderGoal() {
+    const t = THEMES[themeKey], el = $('goal'), isEmoji = !!TILESETS[setKey].labels;
+    el.className = 'tile' + (isEmoji ? ' emoji' : '');
+    el.style.background = t.tiles[10]; el.style.color = t.lightTxt;
+    const lb = label(2048);
+    if (lb.startsWith('<')) el.innerHTML = lb; else el.textContent = lb;
+    $('gname').textContent = GOAL_NAMES[setKey] || '2048';
+  }
+
   function render(newPos, merged) {
+    renderGoal();
     const t = THEMES[themeKey], isEmoji = !!TILESETS[setKey].labels;
     board.querySelectorAll('.tile').forEach(x => x.remove());
     grid.forEach((row, r) => row.forEach((v, c) => {
