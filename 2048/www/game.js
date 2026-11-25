@@ -75,6 +75,15 @@
   };
 
 
+  let specs3d = false;
+  function ensureSpecs3D() {
+    if (specs3d || setKey !== 'specs' || !window.renderSpecs3D) return;
+    specs3d = true;
+    try {
+      const imgs = window.renderSpecs3D();
+      if (imgs) imgs.forEach((u, i) => { SPECS[i] = `<img src="${u}" alt="">`; });
+    } catch (e) {}
+  }
   const keyOf = v => Math.min(Math.log2(v) - 1, 11);
   let themeKey = ls.get('theme2048') in THEMES ? ls.get('theme2048') : 'classic';
   let setKey = ls.get('tiles2048') in TILESETS ? ls.get('tiles2048') : 'numbers';
@@ -161,7 +170,7 @@
       }
       if (newPos && newPos[0] === r && newPos[1] === c) el.classList.add('new');
       else if (merged && merged.has(r + ',' + c)) el.classList.add('merge');
-      if (label(v).startsWith('<svg')) el.innerHTML = label(v); else el.textContent = label(v);
+      if (label(v).startsWith('<')) el.innerHTML = label(v); else el.textContent = label(v);
       place(el, r, c);
       board.appendChild(el);
     }));
@@ -217,7 +226,7 @@
   };
   $('snd').onclick = () => { soundOn = !soundOn; ls.set('sound2048', soundOn ? 'on' : 'off'); showSnd(); sfx.move(); };
   $('theme').onchange = e => { themeKey = e.target.value; ls.set('theme2048', themeKey); applyTheme(); render(); e.target.blur(); };
-  $('tileset').onchange = e => { setKey = e.target.value; ls.set('tiles2048', setKey); render(); e.target.blur(); };
+  $('tileset').onchange = e => { setKey = e.target.value; ls.set('tiles2048', setKey); ensureSpecs3D(); render(); e.target.blur(); };
 
   const keys = { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2, ArrowDown: 3, a: 0, w: 1, d: 2, s: 3 };
   document.addEventListener('keydown', e => {
@@ -235,5 +244,5 @@
     act(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 0) : (dy > 0 ? 3 : 1));
   }, { passive: true });
 
-  applyTheme(); showSnd(); start();
+  applyTheme(); showSnd(); ensureSpecs3D(); start();
 })();
