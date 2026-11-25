@@ -24,17 +24,32 @@
       tiles: ['#3a3f5c','#454b72','#5a4fa0','#6e4fc2','#8a4fd6','#a64fe0','#c24fd0','#d94fb0','#e84f8a','#f2536a','#ff6a4f'], big: '#ffd24f', darkTxt: '#14161f', lightTxt: '#f5f6ff' }
   };
 
+  // Spectacles drawn as SVG so each level has its own frame colour and shape
+  function glasses(frame, lens, shape) {
+    const g = shape === 'round'
+      ? `<circle cx="16" cy="20" r="11" fill="${lens}" stroke="${frame}" stroke-width="3.5"/><circle cx="48" cy="20" r="11" fill="${lens}" stroke="${frame}" stroke-width="3.5"/>`
+      : `<rect x="4" y="10" width="25" height="19" rx="${shape === 'square' ? 3 : 9}" fill="${lens}" stroke="${frame}" stroke-width="3.5"/><rect x="35" y="10" width="25" height="19" rx="${shape === 'square' ? 3 : 9}" fill="${lens}" stroke="${frame}" stroke-width="3.5"/>`;
+    return `<svg viewBox="0 0 64 40" aria-hidden="true">${g}<path d="M27 19q5-5 10 0M5 17L1 13M59 17l4-4" stroke="${frame}" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>`;
+  }
+  const SPECS = [
+    ['#7a7a7a','#e8f4ff','round'], ['#8b5a2b','#f3e6d0','square'], ['#222','#9ec9e8','round'],
+    ['#d93a3a','#ffe0e0','square'], ['#f08a1c','#fff0d0','pill'], ['#e6c200','#fffbd0','round'],
+    ['#2e9e4f','#d8f5df','square'], ['#12a5a5','#d0f3f3','pill'], ['#2b6fd6','#d6e6ff','round'],
+    ['#8a3fd0','#ecdcff','square'], ['#c9921a','#222','pill']
+  ].map(a => glasses(...a));
+
   // ---------- Tile sets (index 0 = tile 2 ... index 10 = tile 2048) ----------
   const TILESETS = {
     numbers: { name: '1 2 3 Numbers', labels: null },
     fruits: { name: '🍎 Fruits', labels: ['🍒','🍓','🍋','🍊','🍎','🍐','🍑','🍍','🍉','🥭','🍇'] },
     animals: { name: '🐶 Animals', labels: ['🐜','🐭','🐱','🐶','🐰','🦊','🐯','🐼','🦁','🐘','🐉'] },
     veg: { name: '🥕 Vegetables', labels: ['🧄','🧅','🥔','🥕','🌽','🥒','🍅','🥦','🍆','🌶️','🫑'] },
-    tiffin: { name: '🥞 Tiffins', labels: ['🍞','🥐','🥞','🧇','🍳','🥪','🌯','🥙','🍔','🍜','🍛'] },
+    tiffin: { name: '🍛 Indian Tiffins', labels: ['🥥','🧆','🥟','🫓','🍚','🥘','🍲','🍮','🍵','☕','🍛'] },
     stones: { name: '💎 Stones', labels: ['🪨','⚪','🟤','🟠','🟡','🟢','🔵','🟣','🔴','🔷','💎'] },
-    specs: { name: '👓 Spectacles', labels: ['🔍','🔎','👓','🕶️','🥽','🤓','🧐','😎','👀','🔭','🔬'] },
+    specs: { name: '👓 Spectacles', labels: SPECS },
     space: { name: '🚀 Space', labels: ['⭐','🌙','🪐','☄️','🌍','🌞','🛰️','🚀','👽','🌌','🏆'] }
   };
+
 
   const keyOf = v => Math.min(Math.log2(v) - 1, 11);
   let themeKey = ls.get('theme2048') in THEMES ? ls.get('theme2048') : 'classic';
@@ -122,7 +137,7 @@
       }
       if (newPos && newPos[0] === r && newPos[1] === c) el.classList.add('new');
       else if (merged && merged.has(r + ',' + c)) el.classList.add('merge');
-      el.textContent = label(v);
+      if (label(v).startsWith('<svg')) el.innerHTML = label(v); else el.textContent = label(v);
       place(el, r, c);
       board.appendChild(el);
     }));

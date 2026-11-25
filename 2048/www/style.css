@@ -35,3 +35,4 @@ button:active{filter:brightness(.88)}
 #overlay button{margin:4px}
 .hint{text-align:center;font-size:13px;opacity:.7}
 @media (prefers-reduced-motion:reduce){.tile.new,.tile.merge{animation:none}}
+.tile svg{width:78%;height:auto}
