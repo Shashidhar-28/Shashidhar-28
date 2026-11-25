@@ -67,7 +67,7 @@
     numbers: { name: '1 2 3 Numbers', labels: null },
     fruits: { name: '🍎 Fruits', labels: ['🍒','🍓','🍋','🍊','🍎','🍐','🍑','🍍','🍉','🥭','🍇'] },
     animals: { name: '🐶 Animals', labels: ['🐜','🐭','🐱','🐶','🐰','🦊','🐯','🐼','🦁','🐘','🐉'] },
-    veg: { name: '🥕 Vegetables', labels: ['🧄','🧅','🥔','🥕','🌽','🥒','🍅','🥦','🍆','🌶️','🫑'] },
+    veg: { name: '🥕 Vegetables', labels: ['🌶️','🫛','🥒','🥕','🍅','🧅','🍆','🥒','🥦','🥬','🎃'] },
     tiffin: { name: '🍛 Indian Tiffins', labels: ['🥥','🧆','🥟','🫓','🍚','🥘','🍲','🍮','🍵','☕','🍛'] },
     stones: { name: '💎 Stones & Gems', labels: ['🪨','🟡','⚪','🔹','🟢','🟣','🔵','❤️','🔷','💎','💍'] },
     specs: { name: '👓 Eyewear', labels: SPECS },
@@ -154,7 +154,7 @@
     return String(v);
   }
 
-  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Dragon', veg: 'Bell pepper', tiffin: 'Curry rice', stones: 'Diamond ring', specs: 'Gold sunglasses', space: 'Trophy' };
+  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Dragon', veg: 'Pumpkin', tiffin: 'Curry rice', stones: 'Diamond ring', specs: 'Gold sunglasses', space: 'Trophy' };
   function renderGoal() {
     const t = THEMES[themeKey], el = $('goal'), isEmoji = !!TILESETS[setKey].labels;
     el.className = 'tile' + (isEmoji ? ' emoji' : '');

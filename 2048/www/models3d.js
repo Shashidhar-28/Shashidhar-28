@@ -186,76 +186,119 @@
   ];
 
   // ---------- vegetables ----------
+  // tube along a curve whose radius varies along its length
+  function taperTube(pts, rFn, m, flat) {
+    const cv = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p))), segs = 48, rad = 14;
+    const geo = new THREE.TubeGeometry(cv, segs, 1, rad, false), pos = geo.attributes.position, v = new THREE.Vector3(), c = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      const ring = Math.floor(i / (rad + 1)), t = ring / segs;
+      cv.getPointAt(Math.min(t, 1), c); v.fromBufferAttribute(pos, i).sub(c).multiplyScalar(rFn(t));
+      if (flat) v.y *= flat;
+      pos.setXYZ(i, c.x + v.x, c.y + v.y, c.z + v.z);
+    }
+    geo.computeVertexNormals(); return new THREE.Mesh(geo, m);
+  }
   const veg = [
-    () => { // garlic
-      const t = tex(256, 256, (g, w, h) => { g.fillStyle = '#f4efe6'; g.fillRect(0, 0, w, h); for (let i = 0; i < 12; i++) { g.fillStyle = 'rgba(150,110,130,.35)'; g.fillRect(i * 21 + 6, 0, 3, h); } });
-      const b = lathe([[0, -0.7], [0.5, -0.65], [0.92, -0.2], [0.86, 0.3], [0.5, 0.75], [0.2, 1.05], [0.06, 1.3], [0, 1.3]], mat(0xffffff, { map: t, roughness: 0.6, bumpMap: t, bumpScale: 3 }));
-      lobes(b, 7, 0.07);
-      const g = G(b); for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28; g.add(tube([[Math.cos(a) * 0.2, -0.7, Math.sin(a) * 0.2], [Math.cos(a) * 0.3, -0.85, Math.sin(a) * 0.3]], 0.015, mat(0xd8c8a0))); }
-      return pose(g);
-    },
-    () => { // onion
-      const t = tex(256, 256, (g, w, h) => { const gr = g.createLinearGradient(0, h, 0, 0); gr.addColorStop(0, '#8a2a5a'); gr.addColorStop(0.6, '#b0407a'); gr.addColorStop(1, '#c89aa0'); g.fillStyle = gr; g.fillRect(0, 0, w, h); for (let i = 0; i < 14; i++) { g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(i * 18 + 4, 0, 3, h); } });
-      const b = lathe([[0, -0.82], [0.4, -0.8], [0.92, -0.3], [0.98, 0.2], [0.62, 0.72], [0.22, 1.02], [0.05, 1.3], [0, 1.3]], mat(0xffffff, { map: t, roughness: 0.35, clearcoat: 0.4, bumpMap: t, bumpScale: 2 }));
-      const g = G(b); for (let i = 0; i < 10; i++) { const a = i / 10 * 6.28; g.add(tube([[Math.cos(a) * 0.15, -0.8, Math.sin(a) * 0.15], [Math.cos(a) * 0.28, -0.95, Math.sin(a) * 0.28]], 0.012, mat(0xe8dcc0))); }
-      return pose(g);
-    },
-    () => { // potato
-      const geo = wobble(new THREE.IcosahedronGeometry(1, 5), 0.16, 2.2, 1.3);
-      const t = tex(256, 256, (g, w, h) => { g.fillStyle = '#b88a52'; g.fillRect(0, 0, w, h); for (let i = 0; i < 500; i++) { g.fillStyle = `rgba(${70 + rnd() * 40 | 0},${45 + rnd() * 30 | 0},20,.3)`; g.beginPath(); g.arc(rnd() * w, rnd() * h, 1 + rnd() * 3, 0, 7); g.fill(); } for (let i = 0; i < 7; i++) { g.fillStyle = '#5a3a1a'; g.beginPath(); g.ellipse(rnd() * w, rnd() * h, 5, 3, 0, 0, 7); g.fill(); } });
-      const p = new THREE.Mesh(geo, mat(0xffffff, { map: t, roughness: 0.85, bumpMap: noiseBump(3, 600), bumpScale: 0.8 })); p.scale.set(1.3, 0.85, 0.95);
-      return pose(G(p), 0.3, -0.4, 0.15);
-    },
-    () => { // carrot
-      const t = tex(256, 256, (g, w, h) => { const gr = g.createLinearGradient(0, h, 0, 0); gr.addColorStop(0, '#d9560a'); gr.addColorStop(1, '#f58a1f'); g.fillStyle = gr; g.fillRect(0, 0, w, h); for (let i = 0; i < 24; i++) { g.fillStyle = 'rgba(120,40,0,.25)'; g.fillRect(0, rnd() * h, w, 2 + rnd() * 3); } });
-      const c = lathe([[0, -1.5], [0.06, -1.3], [0.22, -0.5], [0.4, 0.4], [0.46, 0.85], [0, 0.88]], mat(0xffffff, { map: t, roughness: 0.4, bumpMap: t, bumpScale: 2 }));
-      const g = G(c), lm = mat(0x2f8a2a, { roughness: 0.6 });
-      for (let i = 0; i < 6; i++) { const a = i / 6 * 6.28; g.add(tube([[0, 0.85, 0], [Math.cos(a) * 0.25, 1.3, Math.sin(a) * 0.25], [Math.cos(a) * 0.5, 1.8, Math.sin(a) * 0.5]], 0.04, lm)); }
-      g.rotation.set(0.25, -0.5, 0.9); return G(g);
-    },
-    () => { // corn
-      const t = tex(256, 256, (g, w, h) => { g.fillStyle = '#f0b81a'; g.fillRect(0, 0, w, h); for (let x = 0; x < w; x += 16) for (let y = 0; y < h; y += 16) { g.fillStyle = '#ffd53a'; g.beginPath(); g.ellipse(x + 8, y + 8, 6.5, 6.5, 0, 0, 7); g.fill(); g.fillStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.arc(x + 6, y + 6, 2, 0, 7); g.fill(); } });
-      const c = lathe([[0, -1.1], [0.3, -1.0], [0.48, -0.4], [0.52, 0.4], [0.38, 0.95], [0, 1.15]], mat(0xffffff, { map: t, roughness: 0.3, clearcoat: 0.5, bumpMap: t, bumpScale: 2 }));
-      const g = G(c), lm = mat(0x6fae2a, { roughness: 0.6, side: THREE.DoubleSide });
-      for (let i = 0; i < 4; i++) { const k = cone(0.5, 1.9, lm); k.scale.z = 0.12; const a = i / 4 * 6.28 + 0.4; k.position.set(Math.cos(a) * 0.45, -0.75, Math.sin(a) * 0.45); k.rotation.set(Math.sin(a) * 0.35, 0, -Math.cos(a) * 0.35); k.rotation.z += Math.PI; k.position.y = -0.2; g.add(k); }
-      g.rotation.set(0.2, -0.5, 0.7); return G(g);
-    },
-    () => { // cucumber
-      const t = grad([[0, '#1f5a1a'], [0.5, '#2f8a2a'], [1, '#1f5a1a']], { streaks: 18, streakColor: 'rgba(200,230,150,.3)', speck: 300, speckColor: 'rgba(220,240,170,.4)' });
-      const c = lathe([[0, -1.5], [0.28, -1.4], [0.42, -0.7], [0.44, 0.7], [0.3, 1.4], [0, 1.5]], mat(0xffffff, { map: t, roughness: 0.3, clearcoat: 0.6, bumpMap: noiseBump(1.6, 800), bumpScale: 0.5 }));
-      const g = G(c); g.rotation.set(0.3, -0.4, 1.3); return G(g);
-    },
-    () => { // tomato
-      const b = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), mat(0xffffff, { roughness: 0.18, clearcoat: 1, map: grad([[0, '#c01a14'], [0.7, '#e83222'], [1, '#c8301a']]) })); b.scale.set(1.05, 0.88, 1.05);
-      lobes(b, 5, 0.02);
-      const g = G(b), lm = mat(0x2f8a2a, { side: THREE.DoubleSide });
-      for (let i = 0; i < 6; i++) { const k = cone(0.13, 0.55, lm); k.scale.z = 0.3; const a = i / 6 * 6.28; k.position.set(Math.cos(a) * 0.3, 0.86, Math.sin(a) * 0.3); k.rotation.set(Math.sin(a) * 1.35, 0, -Math.cos(a) * 1.35); g.add(k); }
-      g.add(tube([[0, 0.84, 0], [0, 1.05, 0]], 0.05, lm)); return pose(g);
-    },
-    () => { // broccoli
-      const g = new THREE.Group(), sm = mat(0x9cc060, { roughness: 0.6 }), fm = mat(0x1f6a28, { roughness: 0.75, bumpMap: noiseBump(2, 600), bumpScale: 3 });
-      g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.4, 1.2, 20), sm)); g.children[0].position.y = -0.7;
-      for (let i = 0; i < 4; i++) { const a = i / 4 * 6.28; g.add(tube([[0, -0.2, 0], [Math.cos(a) * 0.5, 0.2, Math.sin(a) * 0.5]], 0.1, sm)); }
-      for (let i = 0; i < 34; i++) { const u = rnd() * 6.28, v = Math.acos(1 - rnd() * 0.95), r = 1.0 + rnd() * 0.15, s = sph(0.26 + rnd() * 0.14, fm, Math.sin(v) * Math.cos(u) * r, 0.5 + Math.cos(v) * 0.9, Math.sin(v) * Math.sin(u) * r); g.add(s); }
-      return pose(g, 0.3, -0.4, 0);
-    },
-    () => { // eggplant
-      const b = lathe([[0, -1.25], [0.45, -1.15], [0.75, -0.6], [0.68, 0.3], [0.5, 0.8], [0.32, 1.0], [0, 1.0]], mat(0x2a0a40, { roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05 }));
-      const g = G(b), lm = mat(0x2f7a24, { side: THREE.DoubleSide });
-      for (let i = 0; i < 7; i++) { const k = cone(0.2, 0.6, lm); k.scale.z = 0.3; const a = i / 7 * 6.28; k.position.set(Math.cos(a) * 0.36, 0.95, Math.sin(a) * 0.36); k.rotation.set(Math.sin(a) * 1.5, 0, -Math.cos(a) * 1.5); g.add(k); }
-      g.add(tube([[0, 1.0, 0], [0.05, 1.3, 0], [0.25, 1.55, 0]], 0.09, lm)); return pose(g, 0.25, -0.5, 0.35);
-    },
-    () => { // chilli
-      const m = mat(0xd4140c, { roughness: 0.12, clearcoat: 1 }), g = new THREE.Group(), cv = new THREE.CatmullRomCurve3([new THREE.Vector3(-1.2, 0.5, 0), new THREE.Vector3(-0.3, 0.1, 0), new THREE.Vector3(0.6, -0.3, 0), new THREE.Vector3(1.4, -0.9, 0)]);
-      for (let i = 0; i <= 28; i++) { const t = i / 28, p = cv.getPoint(t), r = 0.36 * Math.pow(1 - t, 0.7) + 0.04; g.add(sph(Math.max(r, 0.04), m, p.x, p.y, p.z)); }
-      const lm = mat(0x2f8a2a); g.add(sph(0.3, lm, -1.22, 0.55, 0, 1, 0.55, 1)); g.add(tube([[-1.25, 0.6, 0], [-1.45, 0.95, 0], [-1.6, 1.15, 0]], 0.07, lm));
+    () => { // green chillies (with one red)
+      const g = new THREE.Group(), gm = mat(0x2a9a1c, { roughness: 0.18, clearcoat: 1, clearcoatRoughness: 0.08 }), rm = mat(0xd4140c, { roughness: 0.15, clearcoat: 1 }), cap = mat(0x2f7a24, { roughness: 0.5 });
+      [[gm, 0, 0, 1.0, 0], [gm, 0.5, -0.3, 0.85, 0.35], [rm, -0.45, -0.5, 0.75, -0.45]].forEach(c => {
+        const cur = [[-0.9, 0.9, 0], [-0.4, 0.2, 0.05], [0.2, -0.5, 0], [0.9, -1.2, -0.05], [1.2, -1.5, 0]];
+        const ch = taperTube(cur, t => 0.34 * Math.pow(1 - t, 0.55) + 0.02, c[0]);
+        const k = G(ch); const stem = tube([[-0.9, 0.9, 0], [-1.05, 1.15, 0], [-1.2, 1.4, 0.05]], 0.06, cap); k.add(stem);
+        const cp = sph(0.2, cap, -0.92, 0.9, 0, 1, 0.6, 1); k.add(cp);
+        k.position.set(c[1], c[2], 0); k.scale.setScalar(c[3]); k.rotation.z = c[4]; g.add(k);
+      });
       return pose(g, 0.2, -0.4, 0.1);
     },
-    () => { // bell pepper
-      const b = lathe([[0, -0.9], [0.5, -0.88], [0.92, -0.45], [1.0, 0.1], [0.88, 0.62], [0.5, 0.85], [0.3, 0.8], [0, 0.7]], mat(0xe8b020, { roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.06 }));
-      lobes(b, 4, 0.08);
-      const g = G(b), lm = mat(0x2f7a24); g.add(tube([[0, 0.7, 0], [0.04, 1.0, 0], [0.18, 1.2, 0]], 0.1, lm));
-      const c = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.07, 10, 20), lm); c.rotation.x = Math.PI / 2; c.position.y = 0.74; g.add(c); return pose(g);
+    () => { // pea pods with loose peas
+      const g = new THREE.Group(), pm = mat(0x6fb82a, { roughness: 0.3, clearcoat: 0.6 }), pea = mat(0x8ad02a, { roughness: 0.2, clearcoat: 1 });
+      [[0, 0.1, 0], [0.5, -0.3, 0.15]].forEach((o, j) => {
+        const cur = [[-1.3, -0.6, 0], [-0.4, -0.15, 0], [0.5, 0.1, 0], [1.3, 0.5, 0]], pod = new THREE.Group();
+        pod.add(taperTube(cur, t => 0.28 + 0.1 * Math.sin(Math.PI * Math.min(t * 1.1, 1)) - 0.12 * t * t, pm, 0.7));
+        const cv = new THREE.CatmullRomCurve3(cur.map(p => new THREE.Vector3(...p)));
+        for (let i = 0; i < 7; i++) { const p = cv.getPointAt(0.1 + i * 0.13); pod.add(sph(0.2, pea, p.x, p.y + 0.12, p.z + 0.09)); }
+        pod.add(tube([[1.3, 0.5, 0], [1.55, 0.75, 0], [1.7, 1.0, 0]], 0.04, mat(0x4a8a1c)));
+        pod.position.set(o[0], o[1], o[2]); pod.rotation.z = j ? -0.15 : 0.1; g.add(pod);
+      });
+      [[-0.8, -1.1, 0.6], [-0.35, -1.2, 0.8], [-1.2, -0.95, 0.9]].forEach(p => g.add(sph(0.19, pea, ...p)));
+      return pose(g, 0.5, -0.35, 0);
+    },
+    () => { // okra / lady finger
+      const g = new THREE.Group(), okM = mat(0xffffff, { roughness: 0.4, clearcoat: 0.3, map: grad([[0, '#4a8a2a'], [0.5, '#6aae3a'], [1, '#4a8a2a']], { streaks: 20, streakColor: 'rgba(230,250,170,.22)' }) });
+      const one = (len) => {
+        const prof = [[0, -len], [0.04, -len * 0.92], [0.17, -len * 0.5], [0.27, len * 0.2], [0.3, len * 0.8], [0.26, len * 0.95], [0.12, len * 1.0], [0, len * 1.0]];
+        const o = lathe(prof, okM, 40); lobes(o, 5, 0.14); const cp = lathe([[0, len * 0.97], [0.26, len * 0.97], [0.2, len * 1.05], [0, len * 1.08]], mat(0x4a7a2a, { roughness: 0.6 }), 20);
+        lobes(cp, 5, 0.1); return G(o, cp);
+      };
+      [[0, 0, 0, 0.0, 1.3], [0.8, -0.1, 0.15, 0.3, 1.2], [-0.8, -0.1, -0.1, -0.3, 1.15], [0.3, -0.35, 0.6, 0.12, 1.0]].forEach(c => { const o = one(c[4]); o.position.set(c[0], c[1], c[2]); o.rotation.z = c[3]; g.add(o); });
+      return pose(G(g), 0.25, -0.45, 0.55);
+    },
+    () => { // carrots with leaves
+      const g = new THREE.Group(), cm = mat(0xffffff, { roughness: 0.4, map: grad([[0, '#d9560a'], [1, '#f58a1f']], { streaks: 6 }), bumpMap: tex(256, 256, (c, w, h) => { c.fillStyle = '#808080'; c.fillRect(0, 0, w, h); for (let i = 0; i < 30; i++) { c.fillStyle = rnd() < 0.5 ? '#606060' : '#a0a0a0'; c.fillRect(0, rnd() * h, w, 2); } }), bumpScale: 1.5 }), lm = mat(0x2f8a2a, { roughness: 0.6 });
+      [[0, 0, 0, 0], [0.45, -0.1, 0.1, 0.15], [-0.45, -0.1, -0.1, -0.15]].forEach((o, j) => {
+        const c = G(lathe([[0, -1.5], [0.05, -1.35], [0.18, -0.6], [0.34, 0.3], [0.4, 0.85], [0, 0.88]], cm));
+        for (let i = 0; i < 6; i++) { const a = i / 6 * 6.28; c.add(tube([[0, 0.85, 0], [Math.cos(a) * 0.2, 1.3, Math.sin(a) * 0.2], [Math.cos(a) * 0.45, 1.8, Math.sin(a) * 0.45]], 0.035, lm)); const lf = leaf(lm, 0.5, 0.1); lf.position.set(Math.cos(a) * 0.45, 1.8, Math.sin(a) * 0.45); lf.rotation.set(0.4, a, 0); c.add(lf); }
+        c.position.set(o[0], o[1], o[2]); c.rotation.z = o[3]; g.add(c);
+      });
+      g.rotation.set(0.25, -0.5, 1.0); return G(g);
+    },
+    () => { // tomatoes
+      const g = new THREE.Group(), tm = mat(0xffffff, { roughness: 0.15, clearcoat: 1, map: grad([[0, '#c01a14'], [0.7, '#e83222'], [1, '#c8301a']]) }), lm = mat(0x2f8a2a, { side: THREE.DoubleSide });
+      [[0, 0, 0, 1], [0.95, -0.15, -0.3, 0.8]].forEach(o => {
+        const b = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), tm); b.scale.set(1.05, 0.88, 1.05); lobes(b, 5, 0.02);
+        const t = G(b); for (let i = 0; i < 6; i++) { const k = cone(0.13, 0.55, lm); k.scale.z = 0.3; const a = i / 6 * 6.28; k.position.set(Math.cos(a) * 0.3, 0.86, Math.sin(a) * 0.3); k.rotation.set(Math.sin(a) * 1.35, 0, -Math.cos(a) * 1.35); t.add(k); }
+        t.add(tube([[0, 0.84, 0], [0, 1.05, 0]], 0.05, lm)); t.position.set(o[0], o[1], o[2]); t.scale.setScalar(o[3]); g.add(t);
+      });
+      return pose(g, 0.3, -0.4, 0);
+    },
+    () => { // red onions with a cut half
+      const t = tex(256, 256, (g, w, h) => { const gr = g.createLinearGradient(0, h, 0, 0); gr.addColorStop(0, '#7a1f4a'); gr.addColorStop(0.6, '#a83a72'); gr.addColorStop(1, '#c89aa0'); g.fillStyle = gr; g.fillRect(0, 0, w, h); for (let i = 0; i < 14; i++) { g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(i * 18 + 4, 0, 3, h); } });
+      const g = new THREE.Group(), b = lathe([[0, -0.82], [0.4, -0.8], [0.92, -0.3], [0.98, 0.2], [0.62, 0.72], [0.22, 1.02], [0.05, 1.3], [0, 1.3]], mat(0xffffff, { map: t, roughness: 0.3, clearcoat: 0.5 }));
+      b.position.x = -0.5; g.add(b);
+      const half = new THREE.Mesh(new THREE.SphereGeometry(0.9, 40, 28, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xa83a72, { roughness: 0.4, side: THREE.DoubleSide })); half.rotation.x = -Math.PI / 2; half.position.set(1.0, -0.1, -0.2); g.add(half);
+      const ct = tex(256, 256, (c, w, h) => { c.fillStyle = '#f4e8f0'; c.fillRect(0, 0, w, h); for (let i = 1; i < 9; i++) { c.strokeStyle = i % 2 ? '#a83a72' : '#d9a0c0'; c.lineWidth = 6; c.beginPath(); c.arc(128, 128, i * 15, 0, 7); c.stroke(); } });
+      const disc = new THREE.Mesh(new THREE.CircleGeometry(0.9, 48), mat(0xffffff, { map: ct, roughness: 0.3, clearcoat: 0.6 })); disc.position.set(1.0, -0.1, -0.2); g.add(disc);
+      return pose(g, 0.3, -0.4, 0);
+    },
+    () => { // long brinjals
+      const g = new THREE.Group(), bm = mat(0x2a0a40, { roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04 }), lm = mat(0x2f7a24, { side: THREE.DoubleSide });
+      [[0, 0, 0, 0.05], [0.7, -0.15, 0.1, 0.3]].forEach(o => {
+        const e = G(lathe([[0, -1.6], [0.18, -1.5], [0.4, -0.8], [0.45, 0.2], [0.36, 0.9], [0.25, 1.15], [0, 1.15]], bm));
+        for (let i = 0; i < 7; i++) { const k = cone(0.17, 0.5, lm); k.scale.z = 0.3; const a = i / 7 * 6.28; k.position.set(Math.cos(a) * 0.28, 1.1, Math.sin(a) * 0.28); k.rotation.set(Math.sin(a) * 1.5, 0, -Math.cos(a) * 1.5); e.add(k); }
+        e.add(tube([[0, 1.15, 0], [0.04, 1.45, 0], [0.18, 1.7, 0]], 0.08, lm));
+        e.position.set(o[0], o[1], o[2]); e.rotation.z = o[3]; g.add(e);
+      });
+      g.rotation.set(0.25, -0.5, 1.15); return G(g);
+    },
+    () => { // bitter gourd
+      const g = new THREE.Group(), bt = tex(256, 256, (c, w, h) => { c.fillStyle = '#3a8a2a'; c.fillRect(0, 0, w, h); for (let i = 0; i < 1800; i++) { c.fillStyle = rnd() < 0.5 ? '#4a9a38' : '#1f6a1a'; c.beginPath(); c.ellipse(rnd() * w, rnd() * h, 1 + rnd() * 2.5, 2 + rnd() * 5, 0, 0, 7); c.fill(); } });
+      const gm = mat(0xffffff, { map: bt, roughness: 0.35, clearcoat: 0.5, bumpMap: bt, bumpScale: 1.2 });
+      [[-0.6, 0.3, 0, 0.1], [0.7, -0.5, 0.3, -0.2]].forEach(o => {
+        const b = lathe([[0, -1.6], [0.1, -1.5], [0.4, -0.9], [0.5, 0], [0.42, 0.9], [0.22, 1.4], [0.08, 1.55], [0, 1.55]], gm, 48); lobes(b, 8, 0.14);
+        b.scale.set(0.78, 1, 0.78); b.position.set(o[0], o[1], o[2]); b.rotation.z = o[3]; g.add(b);
+      });
+      g.rotation.set(0.3, -0.4, 1.35); return G(g);
+    },
+    () => { // cauliflower
+      const g = new THREE.Group(), fm = mat(0xf4f0de, { roughness: 0.95 }), lm = mat(0x4a8a3a, { roughness: 0.5, side: THREE.DoubleSide });
+      for (let i = 0; i < 160; i++) { const u = rnd() * 6.28, v = Math.acos(1 - rnd() * 1.55), r = 0.88 + rnd() * 0.1, s = sph(0.1 + rnd() * 0.09, fm, Math.sin(v) * Math.cos(u) * r, Math.cos(v) * r * 0.9 - 0.05, Math.sin(v) * Math.sin(u) * r); g.add(s); }
+      g.add(sph(0.88, fm, 0, -0.05, 0));
+      for (let i = 0; i < 7; i++) { const sh = new THREE.Mesh(new THREE.SphereGeometry(1.0 + i * 0.012, 32, 20, i / 7 * 6.28, 1.3, 1.95, 1.2), mat(0x5a9a3a, { roughness: 0.5, side: THREE.DoubleSide, color: new THREE.Color().setHSL(0.27 + rnd() * 0.03, 0.45, 0.38 + rnd() * 0.1) })); g.add(sh); }
+      return pose(g, 0.3, -0.4, 0);
+    },
+    () => { // cabbage
+      const g = new THREE.Group();
+      const vt = tex(256, 256, (c, w, h) => { c.fillStyle = '#9fd070'; c.fillRect(0, 0, w, h); c.strokeStyle = '#d8eeb8'; c.lineWidth = 3; for (let i = 0; i < 7; i++) { c.beginPath(); c.moveTo(w / 2, h); c.quadraticCurveTo(w * (0.15 + i * 0.12), h * 0.5, w * (0.1 + i * 0.13), 0); c.stroke(); } });
+      g.add(sph(0.95, mat(0xcfe8a8, { roughness: 0.6 }))); g.add(sph(0.34, mat(0xb8dc8a, { roughness: 0.6 }), 0, 0.97, 0, 1, 0.4, 1));
+      for (let i = 0; i < 12; i++) { const sh = new THREE.Mesh(new THREE.SphereGeometry(1.0 + i * 0.012, 36, 24, rnd() * 6.28, 1.7 + rnd() * 0.6, i < 4 ? 0 : 0.25 + rnd() * 0.3, i < 4 ? 2.1 : 1.8 + rnd() * 0.5), mat(0xffffff, { map: vt, roughness: 0.55, color: new THREE.Color().setHSL(0.24 + rnd() * 0.04, 0.5, 0.62 + rnd() * 0.12), side: THREE.DoubleSide })); g.add(sh); }
+      return pose(g, 0.3, -0.4, 0);
+    },
+    () => { // pumpkin
+      const pm = mat(0xffffff, { roughness: 0.4, clearcoat: 0.4, map: grad([[0, '#d86a0a'], [0.5, '#f58a1a'], [1, '#e87a10']], { streaks: 24, streakColor: 'rgba(120,40,0,.18)' }) });
+      const b = lathe([[0, -0.78], [0.55, -0.74], [1.05, -0.35], [1.2, 0.08], [0.95, 0.55], [0.4, 0.72], [0.15, 0.66], [0, 0.55]], pm, 80); lobes(b, 10, 0.07);
+      const g = G(b); g.add(tube([[0, 0.55, 0], [0.04, 0.9, 0], [0.22, 1.18, 0]], 0.13, mat(0x5a6a1a, { roughness: 0.8 })));
+      const lf = leaf(mat(0x3a8a24, { side: THREE.DoubleSide }), 0.9, 0.35); lf.position.set(0.08, 0.8, 0); lf.rotation.set(-0.9, 0.6, -1.0); g.add(lf);
+      return pose(g, 0.25, -0.45, 0);
     }
   ];
 
