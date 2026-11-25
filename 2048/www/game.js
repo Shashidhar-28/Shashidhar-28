@@ -27,7 +27,6 @@
   // ---------- Tile sets (index 0 = tile 2 ... index 10 = tile 2048) ----------
   const TILESETS = {
     numbers: { name: '1 2 3 Numbers', labels: null },
-    kannada: { name: 'ಕನ್ನಡ ಅಂಕೆ', labels: null, fmt: v => String(v).replace(/\d/g, d => '೦೧೨೩೪೫೬೭೮೯'[d]) },
     fruits: { name: '🍎 Fruits', labels: ['🍒','🍓','🍋','🍊','🍎','🍐','🍑','🍍','🍉','🥭','🍇'] },
     animals: { name: '🐶 Animals', labels: ['🐜','🐭','🐱','🐶','🐰','🦊','🐯','🐼','🦁','🐘','🐉'] },
     space: { name: '🚀 Space', labels: ['⭐','🌙','🪐','☄️','🌍','🌞','🛰️','🚀','👽','🌌','🏆'] }
@@ -100,7 +99,7 @@
   function label(v) {
     const s = TILESETS[setKey];
     if (s.labels) return s.labels[Math.min(keyOf(v), 10)];
-    return s.fmt ? s.fmt(v) : String(v);
+    return String(v);
   }
 
   function render(newPos, merged) {
