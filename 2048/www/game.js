@@ -130,11 +130,56 @@
       o.start(t0); o.stop(t0 + dur + 0.02);
     } catch (e) {}
   }
+  // noise burst (for gun shots etc.)
+  let nbuf = null;
+  function noise(dur, f0, f1, vol, delay, type) {
+    if (!soundOn) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+      if (!nbuf) { nbuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+      const t0 = ac.currentTime + (delay || 0), s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+      s.buffer = nbuf; f.type = type || 'lowpass';
+      f.frequency.setValueAtTime(f0, t0); f.frequency.exponentialRampToValueAtTime(Math.max(f1, 30), t0 + dur);
+      g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      s.connect(f); f.connect(g); g.connect(ac.destination); s.start(t0); s.stop(t0 + dur + 0.02);
+    } catch (e) {}
+  }
+  const lvl = v => Math.max(0, Math.log2(v) - 2);
+  function gunshot(vol, delay, big) {
+    noise(0.03, 9000, 3000, vol * 0.7, delay, 'highpass');            // sharp crack
+    noise(big ? 0.28 : 0.2, 4200, 260, vol, delay, 'lowpass');        // blast
+    tone(150, big ? 0.22 : 0.14, 'sine', vol * 0.9, delay, 42);       // thump
+  }
+  const PACKS = {
+    classic: { name: 'Classic',
+      move() { tone(220, 0.07, 'triangle', 0.08, 0, 160); },
+      merge(v) { const f = 330 * Math.pow(1.12, lvl(v)); tone(f, 0.16, 'sine', 0.18); tone(f * 1.5, 0.12, 'sine', 0.08, 0.04); },
+      win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.25, 'triangle', 0.18, i * 0.12)); },
+      over() { [392, 330, 262, 196].forEach((f, i) => tone(f, 0.28, 'sawtooth', 0.1, i * 0.16)); } },
+    pop: { name: 'Bubble pop',
+      move() { tone(520, 0.05, 'sine', 0.07, 0, 300); },
+      merge(v) { const f = 260 + lvl(v) * 40; tone(f, 0.11, 'sine', 0.22, 0, f * 3); tone(f * 2, 0.06, 'sine', 0.1, 0.07, f * 4); },
+      win() { [400, 500, 640, 800, 1000, 1280].forEach((f, i) => tone(f, 0.12, 'sine', 0.2, i * 0.07, f * 2)); },
+      over() { [500, 420, 340, 260].forEach((f, i) => tone(f, 0.18, 'sine', 0.2, i * 0.15, f * 0.5)); } },
+    chime: { name: 'Soft chime',
+      move() { tone(660, 0.12, 'sine', 0.05); },
+      merge(v) { const f = 392 * Math.pow(1.1, lvl(v)); tone(f, 0.5, 'sine', 0.16); tone(f * 2.76, 0.3, 'sine', 0.05); tone(f * 4.1, 0.2, 'sine', 0.025); },
+      win() { [523, 659, 784].forEach(f => { tone(f, 0.9, 'sine', 0.13, 0); tone(f * 2, 0.6, 'sine', 0.04, 0); }); tone(1047, 1.0, 'sine', 0.14, 0.3); },
+      over() { tone(220, 1.0, 'sine', 0.16); tone(207, 1.0, 'sine', 0.12, 0.05); tone(110, 1.2, 'sine', 0.12, 0.1); } },
+    shoot: { name: 'Shooting (pistol)',
+      move() { noise(0.025, 6000, 2000, 0.05, 0, 'highpass'); },
+      merge(v) { gunshot(0.4 + Math.min(lvl(v), 8) * 0.04, 0, lvl(v) >= 4); },
+      win() { [0, 0.16, 0.32].forEach(d => gunshot(0.5, d, true)); tone(784, 0.4, 'triangle', 0.14, 0.55); tone(1047, 0.5, 'triangle', 0.14, 0.7); },
+      over() { gunshot(0.5, 0, true); noise(0.5, 3000, 200, 0.12, 0.18, 'lowpass'); tone(160, 0.6, 'sawtooth', 0.08, 0.2, 60); } }
+  };
+  let packKey = ls.get('pack2048') in PACKS ? ls.get('pack2048') : 'classic';
+  fillSelect($('sndpack'), PACKS, packKey);
   const sfx = {
-    move() { tone(220, 0.07, 'triangle', 0.08, 0, 160); },
-    merge(v) { const f = 330 * Math.pow(1.12, Math.max(0, Math.log2(v) - 2)); tone(f, 0.16, 'sine', 0.18); tone(f * 1.5, 0.12, 'sine', 0.08, 0.04); },
-    win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.25, 'triangle', 0.18, i * 0.12)); },
-    over() { [392, 330, 262, 196].forEach((f, i) => tone(f, 0.28, 'sawtooth', 0.1, i * 0.16)); }
+    move() { PACKS[packKey].move(); },
+    merge(v) { PACKS[packKey].merge(v); },
+    win() { PACKS[packKey].win(); },
+    over() { PACKS[packKey].over(); }
   };
   function showSnd() { $('snd').textContent = soundOn ? '🔊' : '🔇'; }
 
@@ -242,6 +287,7 @@
     grid = prev.grid; score = prev.score; prev = null;
     $('overlay').hidden = true; render(); sfx.move();
   };
+  $('sndpack').onchange = e => { packKey = e.target.value; ls.set('pack2048', packKey); if (!soundOn) { soundOn = true; ls.set('sound2048', 'on'); showSnd(); } sfx.merge(64); e.target.blur(); };
   $('snd').onclick = () => { soundOn = !soundOn; ls.set('sound2048', soundOn ? 'on' : 'off'); showSnd(); sfx.move(); };
   $('theme').onchange = e => { themeKey = e.target.value; ls.set('theme2048', themeKey); applyTheme(); render(); e.target.blur(); };
   $('tileset').onchange = e => { setKey = e.target.value; ls.set('tiles2048', setKey); ensureSet3D(); render(); e.target.blur(); };
