@@ -81,7 +81,11 @@
     done3d[setKey] = true;
     try {
       const imgs = window.renderSet3D(setKey);
-      if (imgs) TILESETS[setKey].labels = imgs.map(u => `<img src="${u}" alt="">`);
+      if (imgs) {
+        const L = imgs.map(u => `<img src="${u}" alt="">`);
+        if (setKey === 'specs' && window.EYE_PHOTOS) window.EYE_PHOTOS.forEach((u, i) => { if (5 + i < L.length) L[5 + i] = `<img class="photo" src="${u}" alt="">`; });
+        TILESETS[setKey].labels = L;
+      }
     } catch (e) {}
   }
   const keyOf = v => Math.min(Math.log2(v) - 1, 11);
@@ -154,12 +158,13 @@
     return String(v);
   }
 
-  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Dragon', veg: 'Pumpkin', tiffin: 'Curry rice', stones: 'Diamond ring', specs: 'Gold sunglasses', space: 'Trophy' };
+  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Dragon', veg: 'Pumpkin', tiffin: 'Curry rice', stones: 'Diamond ring', specs: 'Gold frame', space: 'Trophy' };
   function renderGoal() {
     const t = THEMES[themeKey], el = $('goal'), isEmoji = !!TILESETS[setKey].labels;
     el.className = 'tile' + (isEmoji ? ' emoji' : '');
-    el.style.background = t.tiles[10]; el.style.color = t.lightTxt;
+    el.style.background = t.tiles[10]; el.style.color = t.lightTxt; el.style.setProperty('--ring', t.tiles[10]);
     const lb = label(2048);
+    if (lb.includes('class="photo"')) el.classList.add('photoTile');
     if (lb.startsWith('<')) el.innerHTML = lb; else el.textContent = lb;
     $('gname').textContent = GOAL_NAMES[setKey] || '2048';
   }
@@ -174,6 +179,7 @@
       el.className = 'tile';
       el.style.background = k > 10 ? t.big : t.tiles[k];
       el.style.color = k < 2 ? t.darkTxt : t.lightTxt;
+      el.style.setProperty('--ring', k > 10 ? t.big : t.tiles[k]);
       if (isEmoji) el.classList.add('emoji');
       else {
         const len = label(v).length;
@@ -181,6 +187,7 @@
       }
       if (newPos && newPos[0] === r && newPos[1] === c) el.classList.add('new');
       else if (merged && merged.has(r + ',' + c)) el.classList.add('merge');
+      if (label(v).includes('class="photo"')) el.classList.add('photoTile');
       if (label(v).startsWith('<')) el.innerHTML = label(v); else el.textContent = label(v);
       place(el, r, c);
       board.appendChild(el);

@@ -565,7 +565,7 @@
     const browline = mk(['brow', 'metal', 0xe8b858, 0xeaf0f4, 0.2, false, 0x0e0e10]);
     const hexRose = mk(['hex', 'metal', 0xe9a98f, 0xf4e0e6, 0.2]);
     const butterfly = mk(['butterfly', 'metal', 0xf0b8a8, 0xf8e8ee, 0.18]);
-    (root.SET3D = root.SET3D || {}).specs = [FR[0], browline, hexRose, monocle, threeD, FR[5], goggles, FR[2], ski, caseItem, FR[10]];
+    (root.SET3D = root.SET3D || {}).specs = [threeD, goggles, monocle, ski, caseItem, FR[0], FR[2], FR[3], browline, hexRose, FR[10]];
   }
 
   const S = (root.SET3D = root.SET3D || {});
