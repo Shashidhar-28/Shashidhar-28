@@ -75,13 +75,13 @@
   };
 
 
-  let specs3d = false;
-  function ensureSpecs3D() {
-    if (specs3d || setKey !== 'specs' || !window.renderSpecs3D) return;
-    specs3d = true;
+  const done3d = {};
+  function ensureSet3D() {
+    if (done3d[setKey] || !window.renderSet3D || !window.SET3D || !window.SET3D[setKey]) return;
+    done3d[setKey] = true;
     try {
-      const imgs = window.renderSpecs3D();
-      if (imgs) imgs.forEach((u, i) => { SPECS[i] = `<img src="${u}" alt="">`; });
+      const imgs = window.renderSet3D(setKey);
+      if (imgs) TILESETS[setKey].labels = imgs.map(u => `<img src="${u}" alt="">`);
     } catch (e) {}
   }
   const keyOf = v => Math.min(Math.log2(v) - 1, 11);
@@ -226,7 +226,7 @@
   };
   $('snd').onclick = () => { soundOn = !soundOn; ls.set('sound2048', soundOn ? 'on' : 'off'); showSnd(); sfx.move(); };
   $('theme').onchange = e => { themeKey = e.target.value; ls.set('theme2048', themeKey); applyTheme(); render(); e.target.blur(); };
-  $('tileset').onchange = e => { setKey = e.target.value; ls.set('tiles2048', setKey); ensureSpecs3D(); render(); e.target.blur(); };
+  $('tileset').onchange = e => { setKey = e.target.value; ls.set('tiles2048', setKey); ensureSet3D(); render(); e.target.blur(); };
 
   const keys = { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2, ArrowDown: 3, a: 0, w: 1, d: 2, s: 3 };
   document.addEventListener('keydown', e => {
@@ -244,5 +244,5 @@
     act(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 0) : (dy > 0 ? 3 : 1));
   }, { passive: true });
 
-  applyTheme(); showSnd(); ensureSpecs3D(); start();
+  applyTheme(); showSnd(); ensureSet3D(); start();
 })();
