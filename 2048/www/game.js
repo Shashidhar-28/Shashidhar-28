@@ -24,19 +24,43 @@
       tiles: ['#3a3f5c','#454b72','#5a4fa0','#6e4fc2','#8a4fd6','#a64fe0','#c24fd0','#d94fb0','#e84f8a','#f2536a','#ff6a4f'], big: '#ffd24f', darkTxt: '#14161f', lightTxt: '#f5f6ff' }
   };
 
-  // Spectacles drawn as SVG so each level has its own frame colour and shape
-  function glasses(frame, lens, shape) {
-    const g = shape === 'round'
-      ? `<circle cx="16" cy="20" r="11" fill="${lens}" stroke="${frame}" stroke-width="3.5"/><circle cx="48" cy="20" r="11" fill="${lens}" stroke="${frame}" stroke-width="3.5"/>`
-      : `<rect x="4" y="10" width="25" height="19" rx="${shape === 'square' ? 3 : 9}" fill="${lens}" stroke="${frame}" stroke-width="3.5"/><rect x="35" y="10" width="25" height="19" rx="${shape === 'square' ? 3 : 9}" fill="${lens}" stroke="${frame}" stroke-width="3.5"/>`;
-    return `<svg viewBox="0 0 64 40" aria-hidden="true">${g}<path d="M27 19q5-5 10 0M5 17L1 13M59 17l4-4" stroke="${frame}" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>`;
+  // Realistic spectacles drawn as SVG (metal/plastic gradients, lens glare, shadow)
+  const LENS = {
+    round: 'M7 32a22 20 0 1 0 44 0a22 20 0 1 0 -44 0z',
+    square: 'M16 14h26a9 9 0 0 1 9 9v16a9 9 0 0 1 -9 9h-26a9 9 0 0 1 -9 -9v-16a9 9 0 0 1 9 -9z',
+    aviator: 'M8 19c0-5 7-8 22-8s22 3 22 10c0 15-9 30-22 30s-22-14-22-32z',
+    cat: 'M6 21q0-8 9-9l28 1q9 1 9 11l-3 11q-4 11-15 11h-6q-17 0-21-15z',
+    wayfarer: 'M6 16q0-3 4-3h38q4 0 4 3l-3 21q-2 11-13 11h-17q-11 0-12-11z'
+  };
+  function glasses(i, f) {
+    const [hi, mid, lo, l1, l2, shape, la] = f, id = 'g' + i, p = LENS[shape];
+    const lens = `<path d="${p}" fill="url(#${id}l)" opacity="${la}"/>
+      <g clip-path="url(#${id}c)"><path d="M2 0L26 0L6 70L-18 70z" fill="#fff" opacity=".42"/><path d="M34 0L40 0L20 70L14 70z" fill="#fff" opacity=".25"/>
+      <ellipse cx="29" cy="14" rx="24" ry="9" fill="#fff" opacity=".12"/></g>
+      <path d="${p}" fill="none" stroke="url(#${id}f)" stroke-width="5" stroke-linejoin="round"/>
+      <path d="${p}" fill="none" stroke="#fff" stroke-width="1" opacity=".55" transform="translate(-.6 -.8)" stroke-linejoin="round" stroke-dasharray="40 200"/>`;
+    return `<svg viewBox="-8 0 136 64" aria-hidden="true"><defs>
+      <linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${hi}"/><stop offset=".5" stop-color="${mid}"/><stop offset="1" stop-color="${lo}"/></linearGradient>
+      <linearGradient id="${id}l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${l1}"/><stop offset="1" stop-color="${l2}"/></linearGradient>
+      <clipPath id="${id}c"><path d="${p}"/></clipPath><filter id="${id}b"><feGaussianBlur stdDeviation="2"/></filter></defs>
+      <ellipse cx="60" cy="59" rx="52" ry="3.5" fill="#000" opacity=".3" filter="url(#${id}b)"/>
+      <path d="M7 24L-5 14M113 24l12-10" stroke="${lo}" stroke-width="4.5" stroke-linecap="round"/><path d="M7 23L-5 13M113 23l12-10" stroke="${mid}" stroke-width="2" stroke-linecap="round"/>
+      <path d="M50 28Q60 19 70 28" fill="none" stroke="url(#${id}f)" stroke-width="4.5" stroke-linecap="round"/>
+      <g>${lens}</g><g transform="translate(120 0) scale(-1 1)">${lens}</g></svg>`;
   }
   const SPECS = [
-    ['#7a7a7a','#e8f4ff','round'], ['#8b5a2b','#f3e6d0','square'], ['#222','#9ec9e8','round'],
-    ['#d93a3a','#ffe0e0','square'], ['#f08a1c','#fff0d0','pill'], ['#e6c200','#fffbd0','round'],
-    ['#2e9e4f','#d8f5df','square'], ['#12a5a5','#d0f3f3','pill'], ['#2b6fd6','#d6e6ff','round'],
-    ['#8a3fd0','#ecdcff','square'], ['#c9921a','#222','pill']
-  ].map(a => glasses(...a));
+    ['#fafbfc','#aab2bd','#5f6670','#d6ecff','#f4faff','round',.55],
+    ['#d99a58','#7d4620','#35190a','#e6eef2','#cfdde5','wayfarer',.45],
+    ['#707070','#1f1f1f','#000','#7aaed0','#2a4558','wayfarer',.85],
+    ['#ff8575','#d02a2a','#780d0d','#fbe4e4','#f0cccc','square',.45],
+    ['#fff3b0','#e2b232','#855f10','#9fcbb0','#34553f','aviator',.8],
+    ['#7b9be0','#2447a0','#0a1a4a','#e8eefb','#d3ddf3','cat',.45],
+    ['#7ce09a','#1f9a47','#0a5424','#dff6e6','#c4ead0','round',.5],
+    ['#ffe0d8','#d99c8c','#855040','#f4dfe6','#dcc3cf','square',.5],
+    ['#d2a6f5','#7a3fc0','#391266','#efe3fb','#d9c4ef','cat',.5],
+    ['#7de6df','#11a39b','#075a55','#d9f5f3','#bfe6e3','wayfarer',.5],
+    ['#fff8c8','#f2c232','#855f10','#666','#0d0d0d','aviator',.92]
+  ].map((f, i) => glasses(i, f));
 
   // ---------- Tile sets (index 0 = tile 2 ... index 10 = tile 2048) ----------
   const TILESETS = {
