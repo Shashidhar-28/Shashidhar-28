@@ -68,3 +68,7 @@ mix-blend-mode:normal;-webkit-mask-image:none;mask-image:none;pointer-events:non
 
 .tile.photoOrig{background:#f4f4f6!important;overflow:hidden;box-shadow:0 5px 0 rgba(0,0,0,.28),0 9px 12px rgba(0,0,0,.28),inset 0 0 0 3px var(--ring)}
 .tile.photoOrig img{width:100%;height:auto;object-fit:contain;transform:none;margin:0}
+
+#toast{position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));transform:translate(-50%,-30px);background:#3c3a32;color:#fff;font-weight:800;font-size:20px;padding:10px 22px;border-radius:30px;opacity:0;pointer-events:none;z-index:50;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+#toast.show{animation:toast 2.2s ease forwards}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-30px) scale(.8)}12%{opacity:1;transform:translate(-50%,0) scale(1.08)}20%{transform:translate(-50%,0) scale(1)}85%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-20px)}}

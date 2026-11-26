@@ -161,22 +161,30 @@
       move() { tone(220, 0.07, 'triangle', 0.08, 0, 160); },
       merge(v) { const f = 330 * Math.pow(1.12, lvl(v)); tone(f, 0.16, 'sine', 0.18); tone(f * 1.5, 0.12, 'sine', 0.08, 0.04); },
       win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.25, 'triangle', 0.18, i * 0.12)); },
-      over() { [392, 330, 262, 196].forEach((f, i) => tone(f, 0.28, 'sawtooth', 0.1, i * 0.16)); } },
+      over() { [392, 330, 262, 196].forEach((f, i) => tone(f, 0.28, 'sawtooth', 0.1, i * 0.16)); },
+      mile(k) { const n = [523, 659, 784, 1047, 1319, 1568].slice(0, 3 + k); n.forEach((f, i) => { tone(f, 0.22, 'triangle', 0.17, i * 0.09); tone(f * 2, 0.12, 'sine', 0.05, i * 0.09); }); },
+      record() { [[523, 0], [659, 0.12], [784, 0.24], [1047, 0.36]].forEach(a => { tone(a[0], 0.4, 'sawtooth', 0.07, a[1]); tone(a[0], 0.4, 'triangle', 0.12, a[1]); }); [1568, 1760, 2093, 2349, 2637].forEach((f, i) => tone(f, 0.18, 'sine', 0.07, 0.6 + i * 0.07)); tone(1047, 0.9, 'triangle', 0.15, 0.55); tone(1319, 0.9, 'triangle', 0.12, 0.55); tone(1568, 0.9, 'triangle', 0.12, 0.55); } },
     pop: { name: 'Bubble pop',
       move() { tone(520, 0.05, 'sine', 0.07, 0, 300); },
       merge(v) { const f = 260 + lvl(v) * 40; tone(f, 0.11, 'sine', 0.22, 0, f * 3); tone(f * 2, 0.06, 'sine', 0.1, 0.07, f * 4); },
       win() { [400, 500, 640, 800, 1000, 1280].forEach((f, i) => tone(f, 0.12, 'sine', 0.2, i * 0.07, f * 2)); },
-      over() { [500, 420, 340, 260].forEach((f, i) => tone(f, 0.18, 'sine', 0.2, i * 0.15, f * 0.5)); } },
+      over() { [500, 420, 340, 260].forEach((f, i) => tone(f, 0.18, 'sine', 0.2, i * 0.15, f * 0.5)); },
+      mile(k) { for (let i = 0; i < 4 + k * 2; i++) { const f = 350 + i * 90; tone(f, 0.1, 'sine', 0.2, i * 0.06, f * 2.2); } },
+      record() { for (let i = 0; i < 12; i++) { const f = 400 + i * 110; tone(f, 0.12, 'sine', 0.18, i * 0.055, f * 2); } [784, 988, 1175, 1568].forEach(f => tone(f, 0.7, 'sine', 0.12, 0.7)); } },
     chime: { name: 'Soft chime',
       move() { tone(660, 0.12, 'sine', 0.05); },
       merge(v) { const f = 392 * Math.pow(1.1, lvl(v)); tone(f, 0.5, 'sine', 0.16); tone(f * 2.76, 0.3, 'sine', 0.05); tone(f * 4.1, 0.2, 'sine', 0.025); },
       win() { [523, 659, 784].forEach(f => { tone(f, 0.9, 'sine', 0.13, 0); tone(f * 2, 0.6, 'sine', 0.04, 0); }); tone(1047, 1.0, 'sine', 0.14, 0.3); },
-      over() { tone(220, 1.0, 'sine', 0.16); tone(207, 1.0, 'sine', 0.12, 0.05); tone(110, 1.2, 'sine', 0.12, 0.1); } },
+      over() { tone(220, 1.0, 'sine', 0.16); tone(207, 1.0, 'sine', 0.12, 0.05); tone(110, 1.2, 'sine', 0.12, 0.1); },
+      mile(k) { const base = 523 * Math.pow(1.0595, k * 2); [1, 1.25, 1.5, 2].slice(0, 3 + (k > 1 ? 1 : 0)).forEach((m, i) => { tone(base * m, 1.0, 'sine', 0.13, i * 0.12); tone(base * m * 2.76, 0.5, 'sine', 0.04, i * 0.12); }); },
+      record() { [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => { tone(f, 1.4, 'sine', 0.12, i * 0.14); tone(f * 2.76, 0.6, 'sine', 0.04, i * 0.14); }); tone(2093, 1.5, 'sine', 0.09, 0.9); } },
     shoot: { name: 'Shooting (pistol)',
       move() { noise(0.025, 6000, 2000, 0.05, 0, 'highpass'); },
       merge(v) { gunshot(0.4 + Math.min(lvl(v), 8) * 0.04, 0, lvl(v) >= 4); },
       win() { [0, 0.16, 0.32].forEach(d => gunshot(0.5, d, true)); tone(784, 0.4, 'triangle', 0.14, 0.55); tone(1047, 0.5, 'triangle', 0.14, 0.7); },
-      over() { gunshot(0.5, 0, true); noise(0.5, 3000, 200, 0.12, 0.18, 'lowpass'); tone(160, 0.6, 'sawtooth', 0.08, 0.2, 60); } }
+      over() { gunshot(0.5, 0, true); noise(0.5, 3000, 200, 0.12, 0.18, 'lowpass'); tone(160, 0.6, 'sawtooth', 0.08, 0.2, 60); },
+      mile(k) { const n = 2 + k; for (let i = 0; i < n; i++) gunshot(0.5, i * 0.11, i === n - 1); tone(1047, 0.35, 'triangle', 0.12, n * 0.11 + 0.1); },
+      record() { for (let i = 0; i < 6; i++) gunshot(0.5, i * 0.1, i % 2 === 1); [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.35, 'triangle', 0.14, 0.75 + i * 0.1)); } }
   };
   let packKey = ls.get('pack2048') in PACKS ? ls.get('pack2048') : 'classic';
   fillSelect($('sndpack'), PACKS, packKey);
@@ -184,12 +192,14 @@
     move() { PACKS[packKey].move(); },
     merge(v) { PACKS[packKey].merge(v); },
     win() { PACKS[packKey].win(); },
-    over() { PACKS[packKey].over(); }
+    over() { PACKS[packKey].over(); },
+    mile(k) { PACKS[packKey].mile(k); },
+    record() { PACKS[packKey].record(); }
   };
   function showSnd() { $('snd').textContent = soundOn ? '🔊' : '🔇'; }
 
   // ---------- Board ----------
-  let grid, score, best, prev, won, keepGoing;
+  let grid, score, best, prev, won, keepGoing, bestAtStart, recordShown, milestones;
 
   for (let i = 0; i < N * N; i++) {
     const c = document.createElement('div');
@@ -257,7 +267,7 @@
   function start() {
     grid = Array.from({ length: N }, () => Array(N).fill(0));
     score = 0; prev = null; won = false; keepGoing = false;
-    best = +ls.get('best2048') || 0;
+    best = +ls.get('best2048') || 0; bestAtStart = best; recordShown = false; milestones = new Set();
     G2048.addRandom(grid); G2048.addRandom(grid);
     $('overlay').hidden = true;
     render();
@@ -276,9 +286,25 @@
     let top = 0;
     merged.forEach(k => { const [a, b] = k.split(',').map(Number); top = Math.max(top, grid[a][b]); });
     if (top) sfx.merge(top); else sfx.move();
+    celebrate();
     if (!won && !keepGoing && grid.some(row => row.includes(2048))) {
       won = true; sfx.win(); showOverlay('You win!', true);
     } else if (!G2048.canMove(grid)) { sfx.over(); showOverlay('Game over', false); }
+  }
+
+  let toastT = null;
+  function toast(text) {
+    const t = $('toast'); t.textContent = text; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+  const MILES = [128, 256, 512, 1024];
+  function celebrate() {
+    let mx = 0; grid.forEach(r => r.forEach(v => { if (v > mx) mx = v; }));
+    let delay = 200, did = false;
+    MILES.forEach((m, k) => { if (mx >= m && !milestones.has(m)) { milestones.add(m); did = true; setTimeout(() => sfx.mile(k), delay); toast('🎉 ' + m + '!'); delay += 900; } });
+    if (!recordShown && bestAtStart > 0 && score > bestAtStart) {
+      recordShown = true; setTimeout(() => sfx.record(), did ? delay : 250); toast('🏆 New high score!');
+    }
   }
 
   function showOverlay(text, canKeep) {
