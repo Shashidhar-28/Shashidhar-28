@@ -200,6 +200,20 @@
 
   // ---------- Board ----------
   let grid, score, best, prev, won, keepGoing, bestAtStart, recordShown, milestones;
+  // ---------- Timer & best times ----------
+  let elapsed = 0, lastTick = 0, ticking = false, timerH = null;
+  const fmt = s => { s = Math.floor(s); const m = Math.floor(s / 60), r = s % 60; return m + ':' + (r < 10 ? '0' : '') + r; };
+  const bestTimes = () => { try { return JSON.parse(ls.get('times2048') || '{}'); } catch (e) { return {}; } };
+  function showTimes() {
+    const bt = bestTimes()[setKey];
+    $('timeNow').textContent = fmt(elapsed);
+    $('timeBest').textContent = bt !== undefined ? fmt(bt) : '--';
+  }
+  function tickStart() { if (ticking) return; ticking = true; lastTick = Date.now(); timerH = setInterval(() => { const n = Date.now(); elapsed += (n - lastTick) / 1000; lastTick = n; showTimes(); }, 250); }
+  function tickStop() { if (!ticking) return; const n = Date.now(); elapsed += (n - lastTick) / 1000; ticking = false; clearInterval(timerH); showTimes(); }
+  document.addEventListener('visibilitychange', () => { if (document.hidden && ticking) { tickStop(); ticking = 'paused'; ticking = false; wasTicking = true; } else if (!document.hidden && wasTicking) { wasTicking = false; tickStart(); } });
+  let wasTicking = false;
+
 
   for (let i = 0; i < N * N; i++) {
     const c = document.createElement('div');
@@ -267,6 +281,7 @@
   function start() {
     grid = Array.from({ length: N }, () => Array(N).fill(0));
     score = 0; prev = null; won = false; keepGoing = false;
+    tickStop(); elapsed = 0; wasTicking = false; showTimes();
     best = +ls.get('best2048') || 0; bestAtStart = best; recordShown = false; milestones = new Set();
     G2048.addRandom(grid); G2048.addRandom(grid);
     $('overlay').hidden = true;
@@ -277,6 +292,7 @@
     if (!$('overlay').hidden) return;
     const r = G2048.move(grid, dir);
     if (!r.moved) return;
+    tickStart();
     prev = { grid: grid.map(x => x.slice()), score };
     const merged = mergedCells(grid, r.grid);
     grid = r.grid; score += r.score;
@@ -288,8 +304,11 @@
     if (top) sfx.merge(top); else sfx.move();
     celebrate();
     if (!won && !keepGoing && grid.some(row => row.includes(2048))) {
-      won = true; sfx.win(); showOverlay('You win!', true);
-    } else if (!G2048.canMove(grid)) { sfx.over(); showOverlay('Game over', false); }
+      won = true; tickStop(); sfx.win();
+      const bt = bestTimes(), old = bt[setKey]; let msg = 'You win!  ⏱ ' + fmt(elapsed);
+      if (old === undefined || Math.max(1, Math.round(elapsed)) < old) { bt[setKey] = Math.max(1, Math.round(elapsed)); ls.set('times2048', JSON.stringify(bt)); msg += old !== undefined ? '  🏅 New best time!' : '  🏅 Best time saved!'; }
+      showTimes(); showOverlay(msg, true);
+    } else if (!G2048.canMove(grid)) { tickStop(); sfx.over(); showOverlay('Game over  ⏱ ' + fmt(elapsed), false); }
   }
 
   let toastT = null;
@@ -314,7 +333,7 @@
   }
 
   $('new').onclick = $('again').onclick = start;
-  $('keep').onclick = () => { keepGoing = true; $('overlay').hidden = true; };
+  $('keep').onclick = () => { keepGoing = true; $('overlay').hidden = true; tickStart(); };
   $('undo').onclick = () => {
     if (!prev) return;
     grid = prev.grid; score = prev.score; prev = null;
@@ -323,7 +342,7 @@
   $('sndpack').onchange = e => { packKey = e.target.value; ls.set('pack2048', packKey); if (!soundOn) { soundOn = true; ls.set('sound2048', 'on'); showSnd(); } sfx.merge(64); e.target.blur(); };
   $('snd').onclick = () => { soundOn = !soundOn; ls.set('sound2048', soundOn ? 'on' : 'off'); showSnd(); sfx.move(); };
   $('theme').onchange = e => { themeKey = e.target.value; ls.set('theme2048', themeKey); applyTheme(); render(); e.target.blur(); };
-  $('tileset').onchange = e => { setKey = e.target.value; ls.set('tiles2048', setKey); ensureSet3D(); render(); e.target.blur(); };
+  $('tileset').onchange = e => { setKey = e.target.value; ls.set('tiles2048', setKey); ensureSet3D(); showTimes(); render(); e.target.blur(); };
 
   const keys = { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2, ArrowDown: 3, a: 0, w: 1, d: 2, s: 3 };
   document.addEventListener('keydown', e => {
