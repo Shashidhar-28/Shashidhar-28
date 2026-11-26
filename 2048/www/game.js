@@ -71,12 +71,18 @@
     tiffin: { name: '🍛 Indian Tiffins', labels: ['🥥','🧆','🥟','🫓','🍚','🥘','🍲','🍮','🍵','☕','🍛'] },
     stones: { name: '💎 Stones & Gems', labels: ['🪨','🟡','⚪','🔹','🟢','🟣','🔵','❤️','🔷','💎','💍'] },
     specs: { name: '👓 Eyewear', labels: SPECS },
+    specsorig: { name: '📷 Eyewear (original photos)', labels: null },
     space: { name: '🚀 Space', labels: ['⭐','🌙','🪐','☄️','🌍','🌞','🛰️','🚀','👽','🌌','🏆'] }
   };
 
 
   const done3d = {};
+  function initOrig() {
+    if (TILESETS.specsorig.labels || !window.EYE_PHOTOS_ORIG) return;
+    TILESETS.specsorig.labels = window.EYE_PHOTOS_ORIG.map(u => `<img class="photo orig" src="${u}" alt="">`);
+  }
   function ensureSet3D() {
+    if (setKey === 'specsorig') { initOrig(); return; }
     if (done3d[setKey] || !window.renderSet3D || !window.SET3D || !window.SET3D[setKey]) return;
     done3d[setKey] = true;
     try {
@@ -203,13 +209,14 @@
     return String(v);
   }
 
-  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Dragon', veg: 'Pumpkin', tiffin: 'Curry rice', stones: 'Diamond ring', specs: 'Gold aviator', space: 'Trophy' };
+  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Dragon', veg: 'Pumpkin', tiffin: 'Curry rice', stones: 'Diamond ring', specs: 'Gold aviator', specsorig: 'Gold aviator', space: 'Trophy' };
   function renderGoal() {
     const t = THEMES[themeKey], el = $('goal'), isEmoji = !!TILESETS[setKey].labels;
     el.className = 'tile' + (isEmoji ? ' emoji' : '');
     el.style.background = t.tiles[10]; el.style.color = t.lightTxt; el.style.setProperty('--ring', t.tiles[10]);
     const lb = label(2048);
-    if (lb.includes('class="photo"')) el.classList.add('photoTile');
+    if (lb.includes('class="photo')) el.classList.add('photoTile');
+    if (lb.includes('photo orig')) el.classList.add('photoOrig');
     if (lb.startsWith('<')) el.innerHTML = lb; else el.textContent = lb;
     $('gname').textContent = GOAL_NAMES[setKey] || '2048';
   }
@@ -232,7 +239,8 @@
       }
       if (newPos && newPos[0] === r && newPos[1] === c) el.classList.add('new');
       else if (merged && merged.has(r + ',' + c)) el.classList.add('merge');
-      if (label(v).includes('class="photo"')) el.classList.add('photoTile');
+      if (label(v).includes('class="photo')) el.classList.add('photoTile');
+      if (label(v).includes('photo orig')) el.classList.add('photoOrig');
       if (label(v).startsWith('<')) el.innerHTML = label(v); else el.textContent = label(v);
       place(el, r, c);
       board.appendChild(el);
