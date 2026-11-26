@@ -70,8 +70,7 @@
     veg: { name: '🥕 Vegetables', labels: ['🌶️','🫛','🥒','🥕','🍅','🧅','🍆','🥒','🥦','🥬','🎃'] },
     tiffin: { name: '🍛 Indian Tiffins', labels: ['🥥','🧆','🥟','🫓','🍚','🥘','🍲','🍮','🍵','☕','🍛'] },
     stones: { name: '💎 Stones & Gems', labels: ['🪨','🟡','⚪','🔹','🟢','🟣','🔵','❤️','🔷','💎','💍'] },
-    specs: { name: '👓 Eyewear', labels: SPECS },
-    specsorig: { name: '📷 Eyewear (original photos)', labels: null },
+    specsorig: { name: '👓 Eyewear', labels: null },
     space: { name: '🚀 Space', labels: ['⭐','🌙','🪐','☄️','🌍','🌞','🛰️','🚀','👽','🌌','🏆'] }
   };
 
