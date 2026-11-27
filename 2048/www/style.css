@@ -76,3 +76,6 @@ mix-blend-mode:normal;-webkit-mask-image:none;mask-image:none;pointer-events:non
 .gtxt small{font-size:12px;letter-spacing:0;font-weight:600;margin-top:5px;opacity:.9;white-space:nowrap}
 .gtxt small b{font-size:13px;letter-spacing:0;font-variant-numeric:tabular-nums}
 #overlay h2{font-size:30px;padding:0 12px}
+
+.tile.foodTile{overflow:hidden}
+.tile.foodTile img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));pointer-events:none;transform:scale(1.06)}
