@@ -262,6 +262,9 @@
       el.style.background = k > 10 ? t.big : t.tiles[k];
       el.style.color = k < 2 ? t.darkTxt : t.lightTxt;
       el.style.setProperty('--ring', k > 10 ? t.big : t.tiles[k]);
+      el.style.setProperty('--d', (Math.random() * 3.2).toFixed(2) + 's');
+      if (v >= 128) el.classList.add('glow');
+      if (v >= 2048) el.classList.add('legend');
       if (isEmoji) el.classList.add('emoji');
       else {
         const len = label(v).length;
@@ -280,6 +283,19 @@
     $('best').textContent = best;
   }
 
+  // sparkle burst where tiles merge
+  function burst(r, c, big) {
+    const b = document.createElement('div'); b.className = 'burst'; place(b, r, c);
+    const n = big ? 12 : 7, cols = ['#fff6b0', '#ffd23a', '#ffffff', '#ffb347'];
+    for (let i = 0; i < n; i++) {
+      const s = document.createElement('i'), a = (i / n) * 6.283 + Math.random() * 0.5, d = 34 + Math.random() * (big ? 46 : 30);
+      s.style.setProperty('--x', Math.cos(a) * d + 'px'); s.style.setProperty('--y', Math.sin(a) * d + 'px');
+      s.style.setProperty('--s', (0.6 + Math.random() * 0.9).toFixed(2)); s.style.background = cols[i % 4];
+      s.style.animationDelay = (Math.random() * 0.06).toFixed(2) + 's';
+      b.appendChild(s);
+    }
+    board.appendChild(b); setTimeout(() => b.remove(), 800);
+  }
   function mergedCells(before, after) {
     const s = new Set();
     after.forEach((row, r) => row.forEach((v, c) => { if (v > 2 && v !== before[r][c]) s.add(r + ',' + c); }));
@@ -307,6 +323,7 @@
     if (score > best) { best = score; ls.set('best2048', best); }
     const pos = G2048.addRandom(grid);
     render(pos, merged);
+    if (fxOn) merged.forEach(k => { const [a, b] = k.split(',').map(Number); burst(a, b, grid[a][b] >= 128); });
     let top = 0;
     merged.forEach(k => { const [a, b] = k.split(',').map(Number); top = Math.max(top, grid[a][b]); });
     if (top) sfx.merge(top); else sfx.move();
@@ -319,6 +336,8 @@
     } else if (!G2048.canMove(grid)) { tickStop(); sfx.over(); showOverlay('Game over  ⏱ ' + fmt(elapsed), false); }
   }
 
+  let fxOn = ls.get('fx2048') !== 'off';
+  function showFx() { document.body.classList.toggle('nofx', !fxOn); $('fx').style.opacity = fxOn ? 1 : 0.55; }
   let toastT = null;
   function toast(text) {
     const t = $('toast'); t.textContent = text; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
@@ -348,6 +367,7 @@
     $('overlay').hidden = true; render(); sfx.move();
   };
   $('sndpack').onchange = e => { packKey = e.target.value; ls.set('pack2048', packKey); if (!soundOn) { soundOn = true; ls.set('sound2048', 'on'); showSnd(); } sfx.merge(64); e.target.blur(); };
+  $('fx').onclick = () => { fxOn = !fxOn; ls.set('fx2048', fxOn ? 'on' : 'off'); showFx(); };
   $('snd').onclick = () => { soundOn = !soundOn; ls.set('sound2048', soundOn ? 'on' : 'off'); showSnd(); sfx.move(); };
   $('theme').onchange = e => { themeKey = e.target.value; ls.set('theme2048', themeKey); applyTheme(); render(); e.target.blur(); };
   $('tileset').onchange = e => { setKey = e.target.value; ls.set('tiles2048', setKey); ensureSet3D(); showTimes(); render(); e.target.blur(); };
@@ -368,5 +388,5 @@
     act(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 0) : (dy > 0 ? 3 : 1));
   }, { passive: true });
 
-  applyTheme(); showSnd(); ensureSet3D(); start();
+  applyTheme(); showSnd(); showFx(); ensureSet3D(); start();
 })();
