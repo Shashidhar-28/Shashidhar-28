@@ -81,6 +81,11 @@
     TILESETS.tiffin.photos = true;
     TILESETS.tiffin.labels = window.FOOD_PHOTOS.map(u => `<img class="food" src="${u}" alt="">`);
   }
+  function initAnimals() {
+    if (TILESETS.animals.photos || !window.ANIMAL_PHOTOS) return;
+    TILESETS.animals.photos = true;
+    TILESETS.animals.labels = window.ANIMAL_PHOTOS.map(u => `<img class="food" src="${u}" alt="">`);
+  }
   function initOrig() {
     if (TILESETS.specsorig.labels || !window.EYE_PHOTOS_ORIG) return;
     TILESETS.specsorig.labels = window.EYE_PHOTOS_ORIG.map(u => `<img class="photo orig" src="${u}" alt="">`);
@@ -88,6 +93,7 @@
   function ensureSet3D() {
     if (setKey === 'specsorig') { initOrig(); return; }
     if (setKey === 'tiffin') { initFood(); return; }
+    if (setKey === 'animals') { initAnimals(); return; }
     if (done3d[setKey] || !window.renderSet3D || !window.SET3D || !window.SET3D[setKey]) return;
     done3d[setKey] = true;
     try {
@@ -238,7 +244,7 @@
     return String(v);
   }
 
-  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Dragon', veg: 'Pumpkin', tiffin: 'Grand thali', stones: 'Diamond ring', specs: 'Gold aviator', specsorig: 'Gold aviator', space: 'Trophy' };
+  const GOAL_NAMES = { numbers: '2048', fruits: 'Grapes', animals: 'Lion & cub', veg: 'Pumpkin', tiffin: 'Grand thali', stones: 'Diamond ring', specs: 'Gold aviator', specsorig: 'Gold aviator', space: 'Trophy' };
   function renderGoal() {
     const t = THEMES[themeKey], el = $('goal'), isEmoji = !!TILESETS[setKey].labels;
     el.className = 'tile' + (isEmoji ? ' emoji' : '');
